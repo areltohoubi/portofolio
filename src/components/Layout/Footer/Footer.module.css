@@ -1,0 +1,274 @@
+/* ==========================================================================
+   Footer : composition éditoriale, variables CSS du projet uniquement.
+   Le contenu est visible par défaut (rendu serveur) ; l'état masqué n'est armé
+   par Motion qu'après l'hydratation.
+   ========================================================================== */
+
+.footer {
+  --pad-x: clamp(1.25rem, 5vw, 4rem);
+
+  position: relative;
+  padding: clamp(4rem, 9vw, 8rem) var(--pad-x) 0;
+  border-top: 1px solid var(--border);
+  background: var(--background-secondary);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+.inner {
+  max-width: 90rem;
+  margin-inline: auto;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   Titre dominant
+   -------------------------------------------------------------------------- */
+.title {
+  margin: 0;
+  font-size: clamp(2.5rem, 7.4vw, 7.5rem);
+  font-weight: 500;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+}
+
+/* Masque de révélation (le padding évite de rogner les jambages) */
+.line {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.06em 0.16em;
+  margin-block: -0.06em -0.16em;
+}
+
+.lineInner {
+  display: block;
+}
+
+.light {
+  font-weight: 300;
+  color: var(--foreground-secondary);
+}
+
+.indent {
+  padding-inline-start: 0.3em;
+}
+
+/* Le point final reprend le détail de la marque */
+.dot {
+  color: var(--primary);
+}
+
+@media (min-width: 768px) {
+  .indent {
+    padding-inline-start: 0.9em;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Grille : texte + contact / index / profils
+   -------------------------------------------------------------------------- */
+.grid {
+  display: grid;
+  gap: 3rem;
+  margin-top: clamp(3rem, 7vw, 6rem);
+}
+
+.description {
+  max-width: 36ch;
+  margin: 0;
+  font-size: clamp(1.0625rem, 0.7rem + 0.8vw, 1.25rem);
+  line-height: 1.55;
+  color: var(--foreground-secondary);
+}
+
+.groupTitle {
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: var(--foreground-secondary);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 2rem;
+  }
+
+  .lead {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 2rem;
+  }
+
+  .lead {
+    grid-column: 1 / span 5;
+  }
+
+  .navGroup {
+    grid-column: 7 / span 3;
+  }
+
+  .socialGroup {
+    grid-column: 10 / span 3;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Email : lien principal (souligné, flèche)
+   -------------------------------------------------------------------------- */
+.email {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 2rem;
+  padding-block: 0.3rem;
+  color: var(--foreground);
+  font-size: clamp(1.25rem, 2.4vw, 2rem);
+  letter-spacing: -0.03em;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.emailText {
+  position: relative;
+  padding-bottom: 0.2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.emailText::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  height: 1px;
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.email:hover,
+.email:focus-visible {
+  color: var(--primary);
+}
+
+.email:hover .emailText::after,
+.email:focus-visible .emailText::after {
+  transform: scaleX(1);
+}
+
+/* --------------------------------------------------------------------------
+   Liens de navigation et de profils
+   -------------------------------------------------------------------------- */
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-block: 0.4rem;
+  color: var(--foreground);
+  font-size: clamp(1.25rem, 1.8vw, 1.5rem);
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.linkText {
+  position: relative;
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.link:hover,
+.link:focus-visible {
+  color: var(--primary);
+}
+
+.link:hover .linkText,
+.link:focus-visible .linkText {
+  transform: translateX(0.4rem);
+}
+
+.email:focus-visible,
+.link:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 4px;
+}
+
+.arrow {
+  flex: none;
+  color: var(--primary);
+  transition: transform 0.25s ease;
+}
+
+.link:hover .arrow,
+.email:hover .arrow,
+.link:focus-visible .arrow,
+.email:focus-visible .arrow {
+  transform: translate(2px, -2px);
+}
+
+/* --------------------------------------------------------------------------
+   Barre inférieure
+   -------------------------------------------------------------------------- */
+.bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem 2rem;
+  margin-top: clamp(3.5rem, 8vw, 7rem);
+  padding-block: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.875rem;
+  color: var(--foreground-secondary);
+}
+
+.bar p {
+  margin: 0;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Point statique : pas d'animation en boucle dans le footer */
+.statusDot {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+@media (min-width: 768px) {
+  .bar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
