@@ -1,0 +1,537 @@
+/* ==========================================================================
+   Projects : piste horizontale
+   - Par défaut (et sans JS) : défilement horizontal natif + scroll-snap.
+   - [data-mode="pinned"] (posé par GSAP, desktop seulement) : section épinglée,
+     la piste est déplacée par transform.
+   Variables CSS du projet uniquement.
+   ========================================================================== */
+
+.root {
+  --pad-x: clamp(1.25rem, 5vw, 4rem);
+  --gutter: max(var(--pad-x), calc((100% - 90rem) / 2 + var(--pad-x)));
+
+  position: relative;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.pin {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  padding-block: clamp(4rem, 8vw, 7rem);
+  background: var(--background);
+}
+
+/* Hauteur d'écran moins la navbar sticky : rien ne dépasse quand c'est épinglé */
+.root[data-mode="pinned"] .pin {
+  height: calc(100svh - var(--header-height, 4.5rem));
+  gap: clamp(0.75rem, 2vh, 1.5rem);
+  padding-block: clamp(1.25rem, 3vh, 2.25rem) clamp(1rem, 2.5vh, 1.75rem);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   En-tête
+   -------------------------------------------------------------------------- */
+.head {
+  width: 100%;
+  max-width: 90rem;
+  margin-inline: auto;
+  padding-inline: var(--pad-x);
+}
+
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: clamp(1rem, 2.5vh, 2rem);
+}
+
+.kickerText,
+.count {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  color: var(--foreground-secondary);
+  white-space: nowrap;
+}
+
+.kickerNum {
+  color: var(--primary);
+}
+
+.rule {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  transform-origin: left center;
+}
+
+.headGrid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2.25rem, min(4.6vw, 7.5svh), 4.25rem);
+  font-weight: 500;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+}
+
+.line {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.06em 0.16em;
+  margin-block: -0.06em -0.16em;
+}
+
+.lineInner {
+  display: block;
+}
+
+.titleLight {
+  font-weight: 300;
+  color: var(--foreground-secondary);
+}
+
+.intro {
+  max-width: 40ch;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--foreground-secondary);
+}
+
+/* L'indication s'efface dès que l'on a commencé à parcourir les projets */
+.hint {
+  margin: 0.9rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: var(--foreground-secondary);
+  transition: opacity 0.4s ease;
+}
+
+.hint[data-started="true"] {
+  opacity: 0;
+}
+
+@media (min-width: 1024px) {
+  .headGrid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 2rem;
+    align-items: end;
+  }
+
+  .title {
+    grid-column: 1 / span 8;
+  }
+
+  .introWrap {
+    grid-column: 9 / span 4;
+  }
+}
+
+.empty {
+  max-width: 90rem;
+  margin: 0 auto;
+  padding-inline: var(--pad-x);
+  color: var(--foreground-secondary);
+}
+
+/* --------------------------------------------------------------------------
+   Piste
+   -------------------------------------------------------------------------- */
+.stage {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: clamp(1rem, 2.5vh, 1.75rem);
+  min-height: 0;
+}
+
+.viewport {
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: var(--gutter);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* Épinglé : aucun défilement natif possible (même via le focus) */
+.root[data-mode="pinned"] .viewport {
+  overflow: clip;
+  scroll-snap-type: none;
+}
+
+.track {
+  position: relative;
+  display: flex;
+  gap: clamp(2rem, 5vw, 5rem);
+  width: max-content;
+  min-width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0.5rem var(--gutter);
+  list-style: none;
+  will-change: transform;
+}
+
+.item {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  width: min(85vw, 24rem);
+  min-height: 0;
+  scroll-snap-align: start;
+}
+
+@media (min-width: 768px) {
+  .item {
+    width: 28rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .item {
+    width: clamp(28rem, 44vw, 46rem);
+  }
+}
+
+.itemInner,
+.article {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.article {
+  position: relative;
+}
+
+.article:has(.caseLink:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   Image
+   -------------------------------------------------------------------------- */
+.media {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--border-subtle);
+  background: var(--background-secondary);
+}
+
+.root[data-mode="pinned"] .media {
+  flex: 1 1 0;
+  min-height: 11rem;
+  aspect-ratio: auto;
+}
+
+.mediaZoom {
+  position: absolute;
+  inset: 0;
+}
+
+.img {
+  object-fit: cover;
+  object-position: top center;
+}
+
+/* Visuel de remplacement honnête : aucune fausse capture */
+.placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background-image:
+    linear-gradient(var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+  background-size: 2.5rem 2.5rem;
+}
+
+.placeholderText {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--background);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: var(--foreground-secondary);
+}
+
+.demoTag {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--border);
+  background: var(--background);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  color: var(--foreground-secondary);
+}
+
+/* --------------------------------------------------------------------------
+   Informations
+   -------------------------------------------------------------------------- */
+.info {
+  display: grid;
+  gap: 0.6rem;
+  padding-top: 1rem;
+}
+
+.root[data-mode="pinned"] .info {
+  gap: 0.4rem;
+  padding-top: 0.75rem;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--foreground-secondary);
+}
+
+/* Indicateur du projet actif : trait vert citron */
+.marker {
+  width: 2rem;
+  height: 1px;
+  background: var(--border);
+  transform: scaleX(0.4);
+  transform-origin: left center;
+  transition:
+    transform 0.4s ease,
+    background-color 0.3s ease;
+}
+
+.num {
+  color: var(--foreground-muted);
+  transition: color 0.3s ease;
+}
+
+.item[data-active="true"] .marker {
+  background: var(--primary);
+  transform: scaleX(1);
+}
+
+.item[data-active="true"] .num {
+  color: var(--primary);
+}
+
+.metaSep {
+  padding-inline-start: 0.75rem;
+  border-inline-start: 1px solid var(--border);
+}
+
+.itemTitle {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.4vw, 2.25rem);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  transition: color 0.25s ease;
+}
+
+.article:hover .itemTitle {
+  color: var(--primary);
+}
+
+.desc {
+  display: -webkit-box;
+  max-width: 52ch;
+  margin: 0;
+  overflow: hidden;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--foreground-secondary);
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.itemTech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--foreground-secondary);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.5rem;
+  margin-top: 0.25rem;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-block: 0.3rem;
+  color: var(--foreground);
+  font-size: 0.9375rem;
+  text-decoration: none;
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 4px;
+}
+
+.linkLabel {
+  position: relative;
+  padding-bottom: 0.15rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.linkLine {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  height: 1px;
+  background: var(--primary);
+}
+
+.linkArrow {
+  flex: none;
+  color: var(--primary);
+}
+
+/* Liens externes au-dessus du lien étiré de l'étude de cas */
+.ext {
+  position: relative;
+  z-index: 2;
+}
+
+/* Toute la zone du projet mène à l'étude de cas (lien étiré) */
+.caseLink {
+  color: var(--primary);
+}
+
+.caseLink::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Contrôles : une seule progression (ligne) + compteur + boutons
+   -------------------------------------------------------------------------- */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 90rem;
+  margin-inline: auto;
+  padding-inline: var(--pad-x);
+}
+
+.progress {
+  position: relative;
+  flex: 1;
+  height: 1px;
+}
+
+.progressTrack,
+.progressFill {
+  position: absolute;
+  inset: 0;
+}
+
+.progressTrack {
+  background: var(--border);
+}
+
+.progressFill {
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.counter {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  color: var(--foreground-secondary);
+  white-space: nowrap;
+}
+
+.counterNow {
+  color: var(--foreground);
+}
+
+.buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--foreground);
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.btn[aria-disabled="true"] {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.btn[aria-disabled="true"]:hover {
+  border-color: var(--border);
+  color: var(--foreground);
+}
