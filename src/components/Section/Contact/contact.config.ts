@@ -1,40 +1,38 @@
-/**
- * Toutes les informations personnelles de la section Contact.
- * Rien n'est inventé : une valeur vide masque l'élément correspondant.
- * Renseigne les variables dans .env.local (voir .env.contact.example).
- */
+/* ==========================================================================
+   Contact : toutes les informations personnelles et textes modifiables.
+   Règle : une valeur vide ("") masque l'élément. Rien n'est inventé.
+   Cette config alimente aussi le footer (email, profils, disponibilité) :
+   une seule source à renseigner.
+   ========================================================================== */
 
-export type SocialLink = { label: string; href: string };
+export type ContactLink = { label: string; href: string };
 
 export const contactConfig = {
-  /** Numéro affiché dans l'indicateur éditorial : adapte-le à l'ordre réel des sections. */
+  /** Numéro affiché dans « 04 / GET IN TOUCH » : adapte-le à l'ordre réel. */
   sectionNumber: "04",
   eyebrow: "GET IN TOUCH",
 
-  /** Titre : la partie `highlight` est affichée en vert citron. */
-  title: {
-    line1: "Have a good project?",
-    line2Before: "Let's make it",
-    highlight: "happen",
-    line2After: ".",
-  },
+  /** Titre sur deux lignes ; `accent` est le mot mis en vert citron. */
+  titleLines: ["Have a project in mind?", "Let’s make it happen."],
+  accent: "happen",
 
   intro:
-    "Have an idea, a project to build, or an opportunity to discuss? I'm always interested in meaningful conversations about web development and digital products.",
+    "Have an idea, a project to build, or an opportunity to discuss? I’m always interested in meaningful conversations about web development and digital products.",
 
-  /** Adresse affichée, cliquable (mailto:) et copiable. Vide = bloc masqué. */
-  email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "",
+  /** À renseigner. Vide : l'adresse et le bouton « copier » sont masqués. */
+  email: "areltohoubi@gmail.com",
 
-  /** Mets `show: true` uniquement si l'information est confirmée. */
-  availability: {
-    show: process.env.NEXT_PUBLIC_AVAILABLE === "true",
-    label: "Open to opportunities",
-  },
-
-  /** Les liens sans URL sont masqués automatiquement. */
+  /** Réseaux professionnels. Un href vide masque la ligne. URL réelles uniquement. */
   socials: [
-    { label: "GitHub", href: process.env.NEXT_PUBLIC_GITHUB_URL ?? "" },
-    { label: "LinkedIn", href: process.env.NEXT_PUBLIC_LINKEDIN_URL ?? "" },
-    { label: "Website", href: process.env.NEXT_PUBLIC_WEBSITE_URL ?? "" },
-  ] satisfies SocialLink[],
+    { label: "GitHub", href: "https://github.com/areltohoubi" }, // ex. "https://github.com/ton-pseudo"
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/arel-tohoubi-934a122b6" }, // ex. "https://www.linkedin.com/in/ton-profil"
+    { label: "Website", href: "https://www.areltohoubi.com" }, // site personnel complémentaire, si tu en as un
+  ] as ContactLink[],
+
+  /** Affiché uniquement si renseigné (vide = masqué). À ne laisser que si c'est vrai. */
+  availability: "Open to opportunities",
+
+  /** Signature de fin de section. */
+  closing: "Thanks for stopping by.",
+  signature: "Arel.",
 };

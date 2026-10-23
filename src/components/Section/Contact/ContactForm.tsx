@@ -1,240 +1,355 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { ArrowRight, Loader2 } from "lucide-react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { EASE, fadeItem, stagger, useReveal } from "../About/section-motion";
 import {
   LIMITS,
   validateContact,
-  type FieldErrors,
-} from "./contact.validation";
+  type ContactErrors,
+  type ContactField,
+  type ContactValues,
+} from "./contact-schema";
+import s from "./Contact.module.css";
 
-type Status = "idle" | "loading" | "success" | "error";
+const EMPTY: ContactValues = { name: "", email: "", subject: "", message: "" };
+const TIMEOUT_MS = 15_000;
 
-const EASE = [0.22, 1, 0.36, 1] as const;
+type Status =
+  | { kind: "idle" }
+  | { kind: "sending" }
+  | { kind: "success" }
+  | { kind: "error"; message: string };
 
-const fieldClass =
-  "peer block w-full border-0 border-b border-[var(--border)] bg-transparent px-0 py-3 text-base text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] focus:outline-none focus-visible:outline-none aria-[invalid=true]:border-[var(--error)] transition-colors";
-
-function Field({
-  id,
-  label,
-  optional,
-  error,
-  index,
-  children,
-}: {
-  id: string;
+type FieldProps = {
+  name: ContactField;
   label: string;
   optional?: boolean;
+  multiline?: boolean;
+  type?: string;
+  autoComplete?: string;
+  maxLength: number;
+  value: string;
   error?: string;
-  index: number;
-  children: React.ReactNode;
-}) {
-  const reduce = useReducedMotion();
+  onChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+};
+
+function Field({
+  name,
+  label,
+  optional,
+  multiline,
+  type = "text",
+  autoComplete,
+  maxLength,
+  value,
+  error,
+  onChange,
+}: FieldProps) {
+  const id = `contact-${name}`;
+  const errorId = `${id}-error`;
+  const shared = {
+    id,
+    name,
+    value,
+    onChange,
+    maxLength,
+    autoComplete,
+    "aria-required": !optional,
+    "aria-invalid": error ? true : undefined,
+    "aria-describedby": error ? errorId : undefined,
+    className: s.input,
+  } as const;
+
   return (
     <motion.div
-      initial={reduce ? false : { opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "0px 0px -10% 0px" }}
-      transition={{ duration: 0.45, delay: index * 0.07, ease: EASE }}
-      className="group relative"
+      className={s.field}
+      variants={fadeItem}
+      initial={false}
+      data-invalid={Boolean(error)}
     >
-      <label
-        htmlFor={id}
-        className="mb-1 flex items-baseline justify-between font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.16em] text-[var(--foreground-secondary)] transition-colors group-focus-within:text-[var(--primary)]"
-      >
-        <span>{label}</span>
-        {optional && <span className="text-[var(--foreground-muted)]">Optional</span>}
+      <label htmlFor={id} className={s.label}>
+        {label}
+        {optional && <span className={s.optional}> (optional)</span>}
       </label>
-      <div className="relative">
-        {children}
-        {/* Soulignement animé au focus (CSS uniquement) */}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute bottom-0 left-0 h-px w-full origin-left scale-x-0 bg-[var(--primary)] transition-transform duration-300 ease-out peer-focus:scale-x-100"
-        />
+      <div className={s.control}>
+        {multiline ? (
+          <textarea {...shared} rows={5} />
+        ) : (
+          <input {...shared} type={type} />
+        )}
       </div>
-      <p
-        id={`${id}-error`}
-        className="min-h-5 pt-1.5 text-sm text-[var(--error)]"
-        aria-live="polite"
-      >
-        {error}
-      </p>
+      <AnimatePresence initial={false}>
+        {error && (
+          <motion.p
+            key="error"
+            id={errorId}
+            className={s.fieldError}
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: EASE }}
+          >
+            {error}
+          </motion.p>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
 
-export function ContactForm() {
-  const reduce = useReducedMotion();
-  const [status, setStatus] = useState<Status>("idle");
-  const [errors, setErrors] = useState<FieldErrors>({});
-  const [feedback, setFeedback] = useState("");
+export default function ContactForm({ email }: { email?: string }) {
+  const [values, setValues] = useState<ContactValues>(EMPTY);
+  const [errors, setErrors] = useState<ContactErrors>({});
+  const [status, setStatus] = useState<Status>({ kind: "idle" });
+
   const formRef = useRef<HTMLFormElement>(null);
-  const sending = useRef(false); // garde synchrone contre le double envoi
+  const honeypotRef = useRef<HTMLInputElement>(null);
+  const sendingRef = useRef(false); // verrou synchrone contre les doubles envois
+  const startedAt = useRef(0);
+  const reveal = useReveal<HTMLDivElement>();
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    startedAt.current = Date.now();
+  }, []);
+
+  const fallback = email ? ` You can also email me at ${email}.` : "";
+  const sending = status.kind === "sending";
+
+  const onChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const name = e.target.name as ContactField;
+    const value = e.target.value;
+    setValues((v) => ({ ...v, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[name];
+        return next;
+      });
+    }
+  };
+
+  const focusFirstInvalid = () => {
+    requestAnimationFrame(() => {
+      formRef.current
+        ?.querySelector<HTMLElement>('[aria-invalid="true"]')
+        ?.focus();
+    });
+  };
+
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (sending.current) return;
+    if (sendingRef.current) return;
 
-    const data = Object.fromEntries(new FormData(e.currentTarget)) as Record<string, string>;
-    const { values, errors: clientErrors } = validateContact(data);
-    setErrors(clientErrors);
-
-    const firstInvalid = (Object.keys(clientErrors) as (keyof FieldErrors)[])[0];
-    if (firstInvalid) {
-      setStatus("idle");
-      setFeedback("");
-      formRef.current?.querySelector<HTMLElement>(`[name="${firstInvalid}"]`)?.focus();
+    // Validation côté client (le serveur revalide de toute façon)
+    const { values: clean, errors: found } = validateContact(values);
+    if (Object.keys(found).length > 0) {
+      setErrors(found);
+      setStatus({
+        kind: "error",
+        message: "Please check the highlighted fields.",
+      });
+      focusFirstInvalid();
       return;
     }
 
-    sending.current = true;
-    setStatus("loading");
-    setFeedback("");
+    sendingRef.current = true;
+    setErrors({});
+    setStatus({ kind: "sending" });
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), TIMEOUT_MS);
 
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify({
+          ...clean,
+          hp: honeypotRef.current?.value ?? "",
+          elapsed: Date.now() - startedAt.current,
+        }),
+        signal: controller.signal,
       });
-      const json = (await res.json().catch(() => null)) as {
+      const data: {
         ok?: boolean;
-        message?: string;
-        errors?: FieldErrors;
-      } | null;
+        error?: string;
+        fieldErrors?: ContactErrors;
+      } | null = await res.json().catch(() => null);
 
-      if (res.ok && json?.ok) {
-        setStatus("success");
-        setFeedback("Message sent. Thank you — I'll get back to you soon.");
-        formRef.current?.reset();
+      if (res.ok && data?.ok) {
+        setValues(EMPTY);
+        setStatus({ kind: "success" });
       } else {
-        if (json?.errors) setErrors(json.errors);
-        setStatus("error");
-        setFeedback(json?.message ?? "Something went wrong. Please try again.");
+        if (data?.fieldErrors) {
+          setErrors(data.fieldErrors);
+          focusFirstInvalid();
+        }
+        const base =
+          data?.error ?? "Something went wrong while sending your message.";
+        // Le repli par email n'est pertinent que pour les erreurs côté service
+        const serviceIssue = res.status >= 500 || res.status === 429;
+        setStatus({
+          kind: "error",
+          message: serviceIssue ? base + fallback : base,
+        });
       }
-    } catch {
-      setStatus("error");
-      setFeedback("Network error. Check your connection and try again.");
+    } catch (err) {
+      const timedOut = err instanceof DOMException && err.name === "AbortError";
+      setStatus({
+        kind: "error",
+        message:
+          (timedOut
+            ? "The request took too long, so I can’t confirm the message was sent."
+            : "Network error: your message was not sent.") + fallback,
+      });
     } finally {
-      sending.current = false;
+      window.clearTimeout(timeout);
+      sendingRef.current = false;
     }
-  }
-
-  const loading = status === "loading";
-  const describe = (k: keyof FieldErrors) => (errors[k] ? `${k}-error` : undefined);
+  };
 
   return (
-    <form ref={formRef} onSubmit={onSubmit} noValidate aria-busy={loading} className="space-y-3">
-      {/* Honeypot : invisible pour les humains */}
-      <div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
-        <label htmlFor="website">Website</label>
-        <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
-      </div>
+    <div className={s.formWrap}>
+      <h3 className={s.formTitle}>Or send a message</h3>
 
-      <Field id="name" label="Name" error={errors.name} index={0}>
-        <input
-          id="name"
-          name="name"
-          type="text"
-          autoComplete="name"
-          required
-          maxLength={LIMITS.name}
-          placeholder="Your name"
-          disabled={loading}
-          aria-invalid={!!errors.name}
-          aria-describedby={describe("name")}
-          className={fieldClass}
-        />
-      </Field>
+      {/* Annonce vocale des changements d'état importants */}
+      <p className={s.srOnly} aria-live="polite" aria-atomic="true">
+        {status.kind === "sending" && "Sending your message."}
+        {status.kind === "success" && "Your message has been sent."}
+      </p>
 
-      <Field id="email" label="Email" error={errors.email} index={1}>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          maxLength={LIMITS.email}
-          placeholder="you@example.com"
-          disabled={loading}
-          aria-invalid={!!errors.email}
-          aria-describedby={describe("email")}
-          className={fieldClass}
-        />
-      </Field>
-
-      <Field id="subject" label="Subject" optional error={errors.subject} index={2}>
-        <input
-          id="subject"
-          name="subject"
-          type="text"
-          maxLength={LIMITS.subject}
-          placeholder="What's it about?"
-          disabled={loading}
-          aria-invalid={!!errors.subject}
-          aria-describedby={describe("subject")}
-          className={fieldClass}
-        />
-      </Field>
-
-      <Field id="message" label="Message" error={errors.message} index={3}>
-        <textarea
-          id="message"
-          name="message"
-          rows={5}
-          required
-          maxLength={LIMITS.message}
-          placeholder="Tell me about your project…"
-          disabled={loading}
-          aria-invalid={!!errors.message}
-          aria-describedby={describe("message")}
-          className={`${fieldClass} resize-y`}
-        />
-      </Field>
-
-      <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between">
-        <button
-          type="submit"
-          disabled={loading}
-          className="group inline-flex min-h-12 items-center justify-center gap-3 rounded-[var(--radius-sm)] bg-[var(--primary)] px-6 text-sm font-medium text-[var(--primary-foreground)] transition-colors hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--focus-ring)]"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-              Sending…
-            </>
-          ) : (
-            <>
-              Send message
-              <ArrowRight
-                className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1"
-                aria-hidden
+      <AnimatePresence mode="wait" initial={false}>
+        {status.kind === "success" ? (
+          <motion.div
+            key="success"
+            className={s.success}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35, ease: EASE }}
+          >
+            <p className={s.successTitle}>
+              Message sent<span className={s.accent}>.</span>
+            </p>
+            <p className={s.successText}>Thank you for getting in touch.</p>
+            <button
+              type="button"
+              className={s.textButton}
+              onClick={() => setStatus({ kind: "idle" })}
+            >
+              Send another message
+            </button>
+          </motion.div>
+        ) : (
+          <motion.form
+            key="form"
+            ref={formRef}
+            className={s.form}
+            noValidate
+            onSubmit={onSubmit}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <motion.div
+              ref={reveal.ref}
+              className={s.fields}
+              variants={stagger}
+              initial={false}
+              animate={reveal.state}
+            >
+              <Field
+                name="name"
+                label="Name"
+                autoComplete="name"
+                maxLength={LIMITS.name}
+                value={values.name}
+                error={errors.name}
+                onChange={onChange}
               />
-            </>
-          )}
-        </button>
+              <Field
+                name="email"
+                label="Email"
+                type="email"
+                autoComplete="email"
+                maxLength={LIMITS.email}
+                value={values.email}
+                error={errors.email}
+                onChange={onChange}
+              />
+              <Field
+                name="subject"
+                label="Subject"
+                optional
+                maxLength={LIMITS.subject}
+                value={values.subject}
+                error={errors.subject}
+                onChange={onChange}
+              />
+              <Field
+                name="message"
+                label="Message"
+                multiline
+                maxLength={LIMITS.messageMax}
+                value={values.message}
+                error={errors.message}
+                onChange={onChange}
+              />
 
-        {/* Zone annoncée aux lecteurs d'écran */}
-        <div role="status" aria-live="polite" className="min-h-6 text-sm">
-          <AnimatePresence mode="wait">
-            {feedback && (
-              <motion.p
-                key={status + feedback}
-                initial={reduce ? false : { opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={reduce ? undefined : { opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className={status === "success" ? "text-[var(--green-sage)]" : "text-[var(--error)]"}
+              {/* Champ piège anti-spam : invisible pour les humains */}
+              <div className={s.hp} aria-hidden="true">
+                <label htmlFor="contact-hp">Leave this field empty</label>
+                <input
+                  ref={honeypotRef}
+                  id="contact-hp"
+                  name="contact_hp"
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                />
+              </div>
+
+              <motion.div
+                className={s.submitRow}
+                variants={fadeItem}
+                initial={false}
               >
-                {feedback}
-              </motion.p>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
-    </form>
+                <button
+                  type="submit"
+                  className={s.submit}
+                  aria-disabled={sending}
+                  aria-busy={sending}
+                  onClick={(e) => sending && e.preventDefault()}
+                >
+                  {sending ? "Sending…" : "Send message"}
+                </button>
+
+                <AnimatePresence initial={false}>
+                  {status.kind === "error" && (
+                    <motion.p
+                      key="error"
+                      role="alert"
+                      className={s.errorBanner}
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.25, ease: EASE }}
+                    >
+                      {status.message}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            </motion.div>
+          </motion.form>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
