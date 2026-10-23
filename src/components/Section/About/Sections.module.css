@@ -1,0 +1,836 @@
+/* ==========================================================================
+   About + Stack : styles partagés. Variables CSS du projet uniquement.
+   Les états initiaux d'animation sont posés par JS (rien n'est masqué en CSS),
+   donc le contenu reste lisible si une animation échoue.
+   ========================================================================== */
+
+.section {
+  --pad-x: clamp(1.25rem, 5vw, 4rem);
+
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  padding: clamp(5rem, 12vw, 10rem) var(--pad-x);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+.section + .section {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.inner {
+  max-width: 90rem;
+  margin-inline: auto;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   En-tête éditorial
+   -------------------------------------------------------------------------- */
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: clamp(2rem, 5vw, 4rem);
+}
+
+.kickerText {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  color: var(--foreground-secondary);
+  white-space: nowrap;
+}
+
+.kickerNum {
+  color: var(--primary);
+}
+
+.rule {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  transform-origin: left center;
+}
+
+.headGrid {
+  display: grid;
+  gap: 2rem;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2.75rem, 7.4vw, 7rem);
+  font-weight: 500;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+}
+
+/* Masque de révélation (le padding évite de rogner les jambages) */
+.line {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.06em 0.16em;
+  margin-block: -0.06em -0.16em;
+}
+
+.lineInner {
+  display: block;
+}
+
+.titleLight {
+  font-weight: 300;
+  color: var(--foreground-secondary);
+}
+
+.accent {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.indent {
+  padding-inline-start: 0.3em;
+}
+
+.introWrap {
+  align-self: end;
+}
+
+.intro {
+  max-width: 38ch;
+  margin: 0;
+  font-size: clamp(1rem, 0.6rem + 0.8vw, 1.1875rem);
+  line-height: 1.6;
+  color: var(--foreground-secondary);
+}
+
+@media (min-width: 768px) {
+  .indent {
+    padding-inline-start: 0.9em;
+  }
+}
+
+@media (min-width: 1024px) {
+  .headGrid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 2rem;
+  }
+
+  .title {
+    grid-column: 1 / span 8;
+  }
+
+  .introWrap {
+    grid-column: 9 / span 4;
+    padding-bottom: 0.75rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Présentation : colonne dominante + colonne de profil
+   -------------------------------------------------------------------------- */
+.presentation {
+  position: relative;
+  display: grid;
+  gap: 3rem;
+  margin-top: clamp(4rem, 9vw, 8rem);
+}
+
+.glyph {
+  display: none;
+  position: absolute;
+  top: -12%;
+  right: -2vw;
+  z-index: -1;
+  font-size: clamp(16rem, 38vw, 36rem);
+  font-weight: 700;
+  line-height: 0.75;
+  letter-spacing: -0.06em;
+  color: var(--background-secondary);
+  user-select: none;
+  pointer-events: none;
+}
+
+.lead {
+  max-width: 34ch;
+  margin: 0;
+  font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+  font-weight: 400;
+  line-height: 1.28;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+
+.body {
+  max-width: 54ch;
+  margin: 1.75rem 0 0;
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: var(--foreground-secondary);
+}
+
+.profile {
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.dl {
+  display: grid;
+  margin: 0;
+}
+
+.dlRow {
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.dlRow dt {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--foreground-muted);
+}
+
+.dlRow dd {
+  margin: 0.35rem 0 0;
+  font-size: 1rem;
+  line-height: 1.45;
+  color: var(--foreground);
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .presentation {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 2rem;
+  }
+
+  .glyph {
+    display: block;
+  }
+
+  .bioCol {
+    grid-column: 2 / span 7;
+  }
+
+  .profile {
+    grid-column: 10 / span 3;
+    padding: 0 0 0 2rem;
+    border-top: 0;
+    border-left: 1px solid var(--border);
+  }
+
+  .dlRow:first-child {
+    padding-top: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Blocs
+   -------------------------------------------------------------------------- */
+.block {
+  margin-top: clamp(5rem, 10vw, 9rem);
+}
+
+.blockHead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2.5rem;
+}
+
+.blockTitle {
+  margin: 0;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+.blockIndex {
+  margin-inline-end: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--primary);
+  vertical-align: middle;
+}
+
+.blockNote {
+  max-width: 46ch;
+  margin: 0;
+  line-height: 1.6;
+  color: var(--foreground-secondary);
+}
+
+@media (min-width: 768px) {
+  .blockHead {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Fil conducteur vertical (expertise, catégories du stack)
+   -------------------------------------------------------------------------- */
+.trailWrap {
+  position: relative;
+  padding-inline-start: 1.5rem;
+}
+
+.trailLine,
+.trailFill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+}
+
+.trailLine {
+  background: var(--border);
+}
+
+.trailFill {
+  background: var(--primary);
+  transform-origin: top center;
+}
+
+/* Repère sur le fil : passe au vert citron quand la ligne le dépasse */
+.mark {
+  position: absolute;
+  top: 1.75rem;
+  left: calc(-1.5rem - 3px);
+  width: 7px;
+  height: 7px;
+  background: var(--border);
+  transition: background-color 0.3s ease;
+}
+
+.mark[data-passed="true"] {
+  background: var(--primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trailFill,
+  .mFill {
+    display: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Expertise
+   -------------------------------------------------------------------------- */
+.exList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.exRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr) 1.5rem;
+  column-gap: 0.5rem;
+  padding-block: 1.4rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.exRow:last-child {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Fond très léger au survol, derrière le contenu */
+.exRow::before {
+  content: "";
+  position: absolute;
+  inset: 0 -0.75rem;
+  z-index: -1;
+  background: var(--background-secondary);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.exRow:hover::before {
+  opacity: 1;
+}
+
+.exRow:has(.exButton:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.exNum {
+  grid-column: 1;
+  padding-top: 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  color: var(--foreground-muted);
+  transition: color 0.2s ease;
+}
+
+.exTitle {
+  grid-column: 2;
+  margin: 0;
+  font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  transition: color 0.2s ease;
+}
+
+.exButton {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.exButton:focus-visible {
+  outline: none;
+}
+
+/* Toute la ligne est cliquable (lien étiré) */
+.exButton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.exDesc {
+  grid-column: 2;
+  max-width: 48ch;
+  margin: 0.6rem 0 0;
+  line-height: 1.6;
+  color: var(--foreground-secondary);
+}
+
+.exIcon {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  padding-top: 0.2rem;
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--foreground-secondary);
+  transition:
+    transform 0.3s ease,
+    color 0.2s ease;
+}
+
+.exRow:hover .exTitle,
+.exRow:hover .exNum,
+.exRow[data-open="true"] .exNum {
+  color: var(--primary);
+}
+
+.exRow[data-open="true"] .exIcon {
+  transform: rotate(45deg);
+  color: var(--primary);
+}
+
+.exPanel {
+  grid-column: 2 / -1;
+  overflow: hidden;
+}
+
+.techs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.25rem;
+  margin: 0;
+  padding: 1.1rem 0 0;
+  list-style: none;
+}
+
+.tech {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--foreground-secondary);
+}
+
+@media (min-width: 1024px) {
+  .exRow {
+    grid-template-columns: 4rem minmax(0, 5fr) minmax(0, 5fr) 2rem;
+    column-gap: 1.5rem;
+    align-items: baseline;
+  }
+
+  .exNum {
+    padding-top: 0;
+  }
+
+  .exDesc {
+    grid-column: 3;
+    grid-row: 1;
+    margin: 0;
+  }
+
+  .exIcon {
+    grid-column: 4;
+  }
+
+  .exPanel {
+    grid-column: 2 / 4;
+    grid-row: 2;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Méthodologie : vertical sur mobile/tablette, horizontale sur desktop
+   -------------------------------------------------------------------------- */
+.method {
+  position: relative;
+  padding-inline-start: 1.5rem;
+}
+
+.mTrail,
+.mFill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+}
+
+.mTrail {
+  background: var(--border);
+}
+
+.mFill {
+  background: var(--primary);
+  transform-origin: top center;
+}
+
+.steps {
+  display: grid;
+  gap: 2.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  position: relative;
+}
+
+.step .mark {
+  top: 0.55rem;
+}
+
+.stepNum {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  color: var(--foreground-muted);
+}
+
+.stepTitle {
+  margin: 0.35rem 0 0;
+  font-size: 1.375rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.stepDesc {
+  max-width: 32ch;
+  margin: 0.6rem 0 0;
+  line-height: 1.6;
+  color: var(--foreground-secondary);
+}
+
+@media (min-width: 1024px) {
+  .method {
+    padding: 2rem 0 0;
+  }
+
+  .mTrail,
+  .mFill {
+    top: 0;
+    right: 0;
+    bottom: auto;
+    left: 0;
+    width: auto;
+    height: 1px;
+  }
+
+  .mFill {
+    transform-origin: left center;
+  }
+
+  .steps {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  .step .mark {
+    top: calc(-2rem - 3px);
+    left: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Stack : core list typographique
+   -------------------------------------------------------------------------- */
+.coreList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.coreRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 0.5rem minmax(0, 1fr);
+  column-gap: 1rem;
+  align-items: baseline;
+  padding-block: clamp(0.9rem, 1.8vw, 1.4rem);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.coreRow:last-child {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.coreDot {
+  width: 0.4rem;
+  height: 0.4rem;
+  background: var(--green-sage);
+  transition: background-color 0.25s ease;
+}
+
+.coreName {
+  font-size: clamp(2.25rem, 5.4vw, 5rem);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  transition: color 0.25s ease;
+}
+
+.coreNote {
+  grid-column: 2;
+  margin-top: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--foreground-secondary);
+  transition: color 0.25s ease;
+}
+
+/* Léger déplacement horizontal au survol (le <li> est animé par Motion) */
+.shift {
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.coreRow:hover .shift {
+  transform: translateX(0.5rem);
+}
+
+.coreRow:hover .coreName {
+  color: var(--primary);
+}
+
+.coreRow:hover .coreDot {
+  background: var(--primary);
+}
+
+.coreRow:hover .coreNote {
+  color: var(--foreground);
+}
+
+@media (min-width: 768px) {
+  .coreRow {
+    grid-template-columns: 0.5rem minmax(0, 1fr) minmax(0, 18rem);
+    column-gap: 2rem;
+  }
+
+  .coreNote {
+    grid-column: 3;
+    margin-top: 0;
+    text-align: right;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Stack : écosystèmes et concepts
+   -------------------------------------------------------------------------- */
+.catList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.catRow {
+  position: relative;
+  display: grid;
+  gap: 1.25rem 2rem;
+  padding-block: 2rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.catRow:last-child {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.catRow .mark {
+  top: 2.6rem;
+}
+
+.catHead {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.catNum {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  color: var(--foreground-muted);
+}
+
+.catTitle {
+  margin: 0;
+  font-size: clamp(1.375rem, 2.2vw, 1.75rem);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.catBlurb {
+  margin: 0.25rem 0 0;
+  color: var(--foreground-secondary);
+  line-height: 1.55;
+}
+
+.techList {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 0.6rem 1.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.techItem {
+  position: relative;
+  padding-block: 0.2rem;
+  font-family: var(--font-mono);
+  font-size: clamp(0.875rem, 0.7rem + 0.5vw, 1.0625rem);
+  color: var(--foreground);
+  transition: color 0.2s ease;
+}
+
+.techItem::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.techItem:hover {
+  color: var(--primary);
+}
+
+.techItem:hover::after {
+  transform: scaleX(1);
+}
+
+.techItem:hover .shift {
+  transform: translateX(2px);
+}
+
+@media (min-width: 1024px) {
+  .catRow {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    padding-block: 2.5rem;
+  }
+
+  .catRow .mark {
+    top: 3.2rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Appel final vers les projets
+   -------------------------------------------------------------------------- */
+.ctaWrap {
+  margin-top: clamp(5rem, 10vw, 9rem);
+}
+
+.cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-block: clamp(2rem, 5vw, 3.5rem);
+  border-block: 1px solid var(--border);
+  color: var(--foreground);
+  text-decoration: none;
+  transition: color 0.25s ease;
+}
+
+.cta:hover {
+  color: var(--primary);
+}
+
+.cta:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 6px;
+}
+
+.ctaLabel {
+  position: relative;
+  font-size: clamp(2.25rem, 7vw, 6.5rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+.ctaLine {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -0.08em;
+  height: 2px;
+  background: var(--primary);
+}
+
+.ctaArrow {
+  flex: none;
+  width: clamp(2rem, 5vw, 4.5rem);
+  height: clamp(2rem, 5vw, 4.5rem);
+  color: var(--primary);
+}

@@ -3,6 +3,9 @@
    Règle : une valeur vide ("") masque l'élément. Rien n'est inventé.
    ========================================================================== */
 
+import { contactConfig } from "@/components/Section/Contact/contact.config";
+
+
 export type FooterLink = { label: string; href: string };
 
 export const footerConfig = {
@@ -15,20 +18,10 @@ export const footerConfig = {
   description:
     "Full Stack Developer crafting thoughtful digital experiences with modern web technologies.",
 
-  /** Adresse email (lien mailto). À renseigner : vide = masquée. */
-  email: "areltohoubi@gmail.com",
-
-  /** Profils. Un href vide masque le lien. Renseigne uniquement des URL réelles. */
-  socials: [
-    { label: "GitHub", href: "https://github.com/areltohoubi" }, // ex. "https://github.com/ton-pseudo"
-    {
-      label: "LinkedIn",
-      href: "https://www.linkedin.com/in/arel-tohoubi-934a122b6",
-    }, // ex. "https://www.linkedin.com/in/ton-profil"
-  ] satisfies FooterLink[],
-
-  /** Affiché uniquement si renseigné. Garde-le cohérent avec la navbar. */
-  availability: "Available for opportunities",
+  /** Email, profils et disponibilité viennent de contact.config.ts (source unique). */
+  email: contactConfig.email,
+  socials: contactConfig.socials,
+  availability: contactConfig.availability,
 
   tagline: "Designed & developed with care.",
 

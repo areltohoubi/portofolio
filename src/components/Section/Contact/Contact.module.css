@@ -1,0 +1,597 @@
+/* ==========================================================================
+   Contact : titre + email au premier plan, formulaire en complément.
+   Variables CSS du projet uniquement. Le contenu est visible par défaut ;
+   les états initiaux d'animation sont posés par JS après l'hydratation.
+   ========================================================================== */
+
+.section {
+  --pad-x: clamp(1.25rem, 5vw, 4rem);
+
+  position: relative;
+  overflow: clip;
+  padding: clamp(5rem, 12vw, 10rem) var(--pad-x) clamp(3rem, 6vw, 5rem);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.inner {
+  max-width: 90rem;
+  margin-inline: auto;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.accent {
+  color: var(--primary);
+}
+
+/* --------------------------------------------------------------------------
+   En-tête
+   -------------------------------------------------------------------------- */
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: clamp(2rem, 5vw, 4rem);
+}
+
+.kickerText {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  color: var(--foreground-secondary);
+  white-space: nowrap;
+}
+
+.kickerNum {
+  color: var(--primary);
+}
+
+.rule {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  transform-origin: left center;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2.5rem, 7vw, 7rem);
+  font-weight: 500;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+}
+
+.line {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.06em 0.16em;
+  margin-block: -0.06em -0.16em;
+}
+
+.lineInner {
+  display: block;
+}
+
+.light {
+  font-weight: 300;
+  color: var(--foreground-secondary);
+}
+
+.indent {
+  padding-inline-start: 0.3em;
+}
+
+@media (min-width: 768px) {
+  .indent {
+    padding-inline-start: 0.9em;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Détail graphique : tracé de circuit (séparateur qui se dessine au scroll)
+   -------------------------------------------------------------------------- */
+.circuit {
+  display: block;
+  width: 100%;
+  max-width: 50rem;
+  height: auto;
+  margin-block: clamp(2.5rem, 6vw, 4.5rem);
+  overflow: visible;
+}
+
+.circuitPath {
+  fill: none;
+  stroke: var(--green-sage);
+  stroke-opacity: 0.55;
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.circuitNode {
+  fill: var(--green-moss);
+}
+
+.circuitEnd {
+  fill: var(--green-moss);
+  transition: fill 0.3s ease;
+}
+
+.circuitEnd[data-passed="true"] {
+  fill: var(--primary);
+}
+
+/* Sans animation de scroll, le tracé est affiché complet */
+@media (prefers-reduced-motion: reduce) {
+  .circuitEnd {
+    fill: var(--primary);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Grille asymétrique
+   -------------------------------------------------------------------------- */
+.grid {
+  display: grid;
+  gap: clamp(3rem, 7vw, 5rem);
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 2rem;
+    align-items: start;
+  }
+
+  .left {
+    grid-column: 1 / span 6;
+  }
+
+  .right {
+    grid-column: 8 / span 5;
+  }
+}
+
+.left {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3rem);
+  min-width: 0;
+}
+
+.intro {
+  max-width: 40ch;
+  margin: 0;
+  font-size: clamp(1.0625rem, 0.7rem + 0.8vw, 1.25rem);
+  line-height: 1.6;
+  color: var(--foreground-secondary);
+}
+
+/* --------------------------------------------------------------------------
+   Email : point focal
+   -------------------------------------------------------------------------- */
+.emailLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--foreground);
+  font-size: clamp(1.5rem, 3.4vw, 3rem);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.emailText {
+  position: relative;
+  padding-bottom: 0.2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.emailText::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.emailArrow {
+  flex: none;
+  color: var(--primary);
+  transition: transform 0.25s ease;
+}
+
+.emailLink:hover,
+.emailLink:focus-visible {
+  color: var(--primary);
+}
+
+.emailLink:hover .emailText::after,
+.emailLink:focus-visible .emailText::after {
+  transform: scaleX(1);
+}
+
+.emailLink:hover .emailArrow,
+.emailLink:focus-visible .emailArrow {
+  transform: translate(3px, -3px);
+}
+
+.emailLink:focus-visible,
+.social:focus-visible,
+.toTop:focus-visible,
+.copyBtn:focus-visible,
+.textButton:focus-visible,
+.submit:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 4px;
+}
+
+.copyRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-top: 1.25rem;
+}
+
+.copyBtn {
+  min-height: 2.75rem;
+  padding: 0 0.1rem;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: none;
+  color: var(--foreground-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.copyBtn:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.copyLabel {
+  display: inline-block;
+}
+
+.copyLabel[data-state="copied"] {
+  color: var(--primary);
+}
+
+.copyLabel[data-state="error"] {
+  color: var(--error);
+}
+
+.copyHint {
+  font-size: 0.8125rem;
+  color: var(--foreground-secondary);
+}
+
+/* --------------------------------------------------------------------------
+   Réseaux : lignes éditoriales
+   -------------------------------------------------------------------------- */
+.socials {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--border);
+}
+
+.social {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 1.05rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--foreground);
+  font-size: clamp(1.25rem, 1.8vw, 1.5rem);
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.social:hover,
+.social:focus-visible {
+  color: var(--primary);
+}
+
+.socialLabel {
+  position: relative;
+}
+
+.socialLine {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -0.2rem;
+  height: 1px;
+  background: var(--primary);
+}
+
+.socialArrow {
+  display: inline-flex;
+  color: var(--primary);
+}
+
+/* --------------------------------------------------------------------------
+   Disponibilité (point statique : aucune boucle d'animation)
+   -------------------------------------------------------------------------- */
+.availability {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  color: var(--foreground-secondary);
+  font-size: 0.9375rem;
+}
+
+.availabilityDot {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+/* --------------------------------------------------------------------------
+   Formulaire : champs soulignés, sans carte
+   -------------------------------------------------------------------------- */
+.formWrap {
+  min-width: 0;
+}
+
+.formTitle {
+  margin: 0 0 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: clamp(1.375rem, 2.2vw, 1.75rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+.fields {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.15rem;
+  padding-bottom: 0.9rem;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: var(--foreground-secondary);
+  transition: color 0.2s ease;
+}
+
+.optional {
+  color: var(--foreground-secondary);
+  opacity: 0.8;
+}
+
+.control {
+  position: relative;
+}
+
+.input {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 1.125rem;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+textarea.input {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+/* Soulignement vert citron qui se dessine au focus */
+.control::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.control:focus-within::after {
+  transform: scaleX(1);
+}
+
+.field:focus-within .label {
+  color: var(--primary);
+}
+
+.field[data-invalid="true"] .input {
+  border-color: var(--error);
+}
+
+.field[data-invalid="true"] .label {
+  color: var(--error);
+}
+
+.fieldError {
+  margin: 0.35rem 0 0;
+  color: var(--error);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+/* Champ piège : hors écran, ignoré des humains et des lecteurs d'écran */
+.hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.submitRow {
+  display: grid;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.25rem;
+  padding: 0.9rem 1.75rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.submit:hover {
+  background: var(--primary-hover);
+}
+
+.submit[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+@media (min-width: 640px) {
+  .submit {
+    justify-self: start;
+  }
+}
+
+.errorBanner {
+  margin: 0;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--error);
+  color: var(--foreground);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.success {
+  display: grid;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.successTitle {
+  margin: 0;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+
+.successText {
+  margin: 0;
+  color: var(--foreground-secondary);
+}
+
+.textButton {
+  justify-self: start;
+  margin-top: 0.75rem;
+  padding: 0.35rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: none;
+  color: var(--foreground);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.textButton:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* --------------------------------------------------------------------------
+   Signature de fin : transition vers le footer
+   -------------------------------------------------------------------------- */
+.end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem 2rem;
+  margin-top: clamp(4rem, 9vw, 7rem);
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.closing {
+  margin: 0;
+  color: var(--foreground-secondary);
+  font-size: 0.9375rem;
+}
+
+.signature {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.toTop {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-block: 0.4rem;
+  color: var(--foreground);
+  font-size: 0.9375rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.toTop:hover {
+  color: var(--primary);
+}

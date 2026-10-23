@@ -44,34 +44,61 @@
 }
 
 :root {
-  --font-sans: var(--font-neue);
-  --radius: 0.625rem;
+  /* Backgrounds */
+  --background: #101712;
+  --background-secondary: #1b251d;
+  --background-tertiary: #263528;
 
-  /* 🎨 TA PALETTE */
-  --background: #FFF4EA;
-  --foreground: #2b2b2b;
+  /* Brand colors */
+  --primary: #d7f36a;
+  --primary-hover: #c5e653;
+  --primary-foreground: #182016;
 
-  --card: #EDDCC6;
-  --card-foreground: #2b2b2b;
+  /* Green palette */
+  --green-deep: #101712;
+  --green-moss: #354b37;
+  --green-sage: #91a878;
+  --green-acid: #d7f36a;
 
-  --popover: #EDDCC6;
-  --popover-foreground: #2b2b2b;
+  /* Text */
+  --foreground: #e8e5d9;
+  --foreground-secondary: #a3b0a0;
+  --foreground-muted: #788777;
 
-  --primary: #BF4646;
-  --primary-foreground: #ffffff;
+  /* Borders */
+  --border: #354b37;
+  --border-subtle: #28372b;
 
-  --secondary: #7EACB5;
-  --secondary-foreground: #ffffff;
+  /* Surfaces */
+  --card: #1b251d;
+  --card-hover: #243126;
+  --popover: #1b251d;
 
-  --muted: #EDDCC6;
-  --muted-foreground: #5c5c5c;
+  /* States */
+  --success: #91a878;
+  --warning: #e8c56a;
+  --error: #e47777;
+  --info: #8caeb0;
 
-  --accent: #EDDCC6;
-  --accent-foreground: #2b2b2b;
+  /* Effects */
+  --selection: #d7f36a;
+  --selection-foreground: #182016;
+  --overlay: rgb(16 23 18 / 80%);
+  --focus-ring: #d7f36a;
 
-  --border: #e6d5be;
-  --input: #e6d5be;
-  --ring: #BF4646;
+  /* Gradients */
+  --gradient-brand: linear-gradient(135deg, #91a878 0%, #d7f36a 100%);
+  --gradient-dark: linear-gradient(180deg, #1b251d 0%, #101712 100%);
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Typography */
+  --font-sans: "Geist", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
 }
 
 .dark {
@@ -84,10 +111,10 @@
   --popover: #2a2a2a;
   --popover-foreground: #ffffff;
 
-  --primary: #BF4646;
+  --primary: #bf4646;
   --primary-foreground: #ffffff;
 
-  --secondary: #7EACB5;
+  --secondary: #7eacb5;
   --secondary-foreground: #ffffff;
 
   --muted: #2a2a2a;
@@ -98,7 +125,16 @@
 
   --border: #333;
   --input: #333;
-  --ring: #BF4646;
+  --ring: #bf4646;
+}
+
+html {
+  scroll-padding-top: 4.5rem;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 @layer base {

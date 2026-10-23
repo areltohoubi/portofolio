@@ -1,0 +1,17 @@
+/* À ajouter dans ton CSS global (ex. app/globals.css) */
+
+/* Opacité très douce pour le point de disponibilité */
+@keyframes contact-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* Ton CSS global devrait déjà contenir (sinon, ajoute-le) :
+   html { scroll-behavior: auto; }  — le retour en haut est géré en JS
+   ::selection { background: var(--selection); color: var(--selection-foreground); }
+*/
