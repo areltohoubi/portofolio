@@ -12,8 +12,8 @@ import {
   stagger,
   useReveal,
 } from "../../Section/About/section-motion";
-import s from "./Footer.module.css";
 import { footerConfig } from "./footer.config";
+import s from "./Footer.module.css";
 
 /* Motion gère uniquement l'apparition (opacity + petit déplacement, une fois).
    Les survols (couleur, décalage, soulignement) sont en CSS, sur des éléments
@@ -60,7 +60,7 @@ export default function Footer() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <footer id="contact" className={s.footer} aria-labelledby="footer-title">
+      <footer className={s.footer} aria-labelledby="footer-title">
         <motion.div
           ref={reveal.ref}
           className={s.inner}

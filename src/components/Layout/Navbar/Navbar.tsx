@@ -242,10 +242,10 @@ export default function Navbar() {
             {/* A. Identité */}
             <div className={s.reveal} data-nav>
               <Link
-                href="/#home"
+                href="/"
                 className={s.brand}
                 aria-label={`${BRAND}. Back to top`}
-                onClick={(e) => handleNav(e, "home")}
+                // onClick={(e) => handleNav(e, "home")}
               >
                 {BRAND}
                 <span className={s.brandDot}>.</span>
