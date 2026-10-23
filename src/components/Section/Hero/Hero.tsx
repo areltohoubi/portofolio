@@ -174,8 +174,8 @@ export default function Hero({
           // 2. Slogan : révélation ligne par ligne (le texte reste du vrai texte)
           tl.fromTo(
             q('[data-hero="line"]'),
-            { yPercent: 105 },
-            { yPercent: 0, duration: 1, stagger: 0.1, ease: "power4.out" },
+            { yPercent: 105, y: 0 },
+            { yPercent: 0, y: 0, duration: 1, stagger: 0.1, ease: "power4.out" },
             0.2,
           );
 

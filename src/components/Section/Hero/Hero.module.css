@@ -38,7 +38,7 @@
   }
 
   .lineInner {
-    transform: translateY(105%);
+    transform: translateY(100%);
     animation: failsafe 0.01s linear 3.5s forwards;
   }
 
