@@ -14,21 +14,22 @@ import {
 import { Menu, X } from "lucide-react";
 import s from "./Navbar.module.css";
 import Link from "next/link";
+import {
+  useChangeLocale,
+  useCurrentLocale,
+  useScopedI18n,
+} from "../../../../locales/client";
 
 gsap.registerPlugin(useGSAP);
 
 /* -------------------------------------------------------------------------
-   Contenu : à ajuster. Les id doivent correspondre aux id des sections.
+   Contenu : les id doivent correspondre aux id des sections.
+   Les labels viennent des fichiers de traduction (scope "Navbar").
    ------------------------------------------------------------------------- */
 const BRAND = "Arel";
 
-const SECTIONS = [
-  { id: "home", label: "Home" },
-  { id: "about", label: "About" },
-  { id: "projects", label: "Projects" },
-  { id: "stack", label: "Stack" },
-  { id: "contact", label: "Contact" },
-] as const;
+const SECTION_IDS = ["home", "about", "projects", "stack", "contact"] as const;
+type SectionId = (typeof SECTION_IDS)[number];
 
 const CONTACT_HREF = "#contact";
 
@@ -67,7 +68,7 @@ function DiagonalArrow() {
   );
 }
 
-function TalkLink({ onClick }: { onClick?: () => void }) {
+function TalkLink({ onClick, label }: { onClick?: () => void; label: string }) {
   return (
     <motion.a
       href={CONTACT_HREF}
@@ -79,7 +80,7 @@ function TalkLink({ onClick }: { onClick?: () => void }) {
       whileFocus="hover"
     >
       <span className={s.ctaLabel}>
-        Let’s talk
+        {label}
         <motion.span
           className={s.underline}
           style={{ originX: 0 }}
@@ -102,9 +103,22 @@ export default function Navbar() {
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const [scrolled, setScrolled] = useState(false);
-  const [active, setActive] = useState<string>("home");
+  const [active, setActive] = useState<SectionId>("home");
   const [open, setOpen] = useState(false);
   const reduce = useReducedMotion();
+
+  const changeLocale = useChangeLocale();
+  const locale = useCurrentLocale();
+  const t = useScopedI18n("Navbar");
+
+  /* Labels traduits, dérivés des ids de section */
+  const labels: Record<SectionId, string> = {
+    home: t("home"),
+    about: t("about"),
+    projects: t("projects"),
+    stack: t("stack"),
+    contact: t("contact"),
+  };
 
   /* GSAP : entrée courte (≈0,9 s), démarre en même temps que celle de la Hero
      et n'anime que opacity/y des wrappers [data-nav] (Motion n'y touche pas). */
@@ -148,7 +162,7 @@ export default function Navbar() {
 
   /* Lien actif : une fine bande de détection au milieu de l'écran */
   useEffect(() => {
-    const els = SECTIONS.map(({ id }) => document.getElementById(id)).filter(
+    const els = SECTION_IDS.map((id) => document.getElementById(id)).filter(
       (el): el is HTMLElement => el !== null,
     );
     if (!els.length) return;
@@ -156,7 +170,7 @@ export default function Navbar() {
     const band = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (entry.isIntersecting) setActive(entry.target.id);
+          if (entry.isIntersecting) setActive(entry.target.id as SectionId);
         }
       },
       { rootMargin: "-45% 0px -54% 0px" },
@@ -167,7 +181,7 @@ export default function Navbar() {
     const last = els[els.length - 1];
     const bottom = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) setActive(last.id);
+        if (entry.isIntersecting) setActive(last.id as SectionId);
       },
       { threshold: 1 },
     );
@@ -202,9 +216,9 @@ export default function Navbar() {
   }, []);
 
   // Tout en haut de page, l'accueil est toujours le lien actif
-  const current = scrolled ? active : "home";
+  const current: SectionId = scrolled ? active : "home";
 
-  const handleNav = (e: MouseEvent<HTMLAnchorElement>, id: string) => {
+  const handleNav = (e: MouseEvent<HTMLAnchorElement>, id: SectionId) => {
     // Si aucune section #home n'existe, retour en haut de page
     if (id === "home" && !document.getElementById("home")) {
       e.preventDefault();
@@ -244,8 +258,7 @@ export default function Navbar() {
               <Link
                 href="/"
                 className={s.brand}
-                aria-label={`${BRAND}. Back to top`}
-                // onClick={(e) => handleNav(e, "home")}
+                aria-label={`${BRAND}. ${t("backToTop")}`}
               >
                 {BRAND}
                 <span className={s.brandDot}>.</span>
@@ -253,9 +266,9 @@ export default function Navbar() {
             </div>
 
             {/* B. Navigation (desktop) */}
-            <nav className={s.nav} aria-label="Primary">
+            <nav className={s.nav} aria-label={t("primaryNav")}>
               <ul className={s.navList}>
-                {SECTIONS.map(({ id, label }) => {
+                {SECTION_IDS.map((id) => {
                   const isActive = current === id;
                   return (
                     <li key={id} className={s.reveal} data-nav>
@@ -265,7 +278,7 @@ export default function Navbar() {
                         aria-current={isActive ? "location" : undefined}
                         onClick={(e) => handleNav(e, id)}
                       >
-                        {label}
+                        {labels[id]}
                         {isActive && (
                           <motion.span
                             layoutId="nav-active"
@@ -284,19 +297,33 @@ export default function Navbar() {
             {/* C. Disponibilité + contact */}
             <div className={s.right}>
               <div className={s.reveal} data-nav>
-                <TalkLink />
+                <button
+                  onClick={() => changeLocale(locale === "fr" ? "en" : "fr")}
+                  className={s.languageSwitcher}
+                >
+                  {locale === "fr" ? "EN" : "FR"}
+                </button>
+              </div>
+              <div className={s.reveal} data-nav>
+                <TalkLink label={t("letsTalk")} />
               </div>
             </div>
 
             {/* Bouton menu (mobile) */}
             <div className={`${s.burgerWrap} ${s.reveal}`} data-nav>
               <button
+                onClick={() => changeLocale(locale === "fr" ? "en" : "fr")}
+                className={s.languageSwitcher}
+              >
+                {locale === "fr" ? "EN" : "FR"}
+              </button>
+              <button
                 ref={buttonRef}
                 type="button"
                 className={s.burger}
                 aria-expanded={open}
                 aria-controls="mobile-menu"
-                aria-label={open ? "Close menu" : "Open menu"}
+                aria-label={open ? t("closeMenu") : t("openMenu")}
                 onClick={() => setOpen((v) => !v)}
               >
                 <AnimatePresence mode="wait" initial={false}>
@@ -344,9 +371,9 @@ export default function Navbar() {
                 exit="closed"
               >
                 <div className={s.panelInner}>
-                  <nav aria-label="Mobile">
+                  <nav aria-label={t("mobileNav")}>
                     <ul className={s.mList}>
-                      {SECTIONS.map(({ id, label }) => {
+                      {SECTION_IDS.map((id) => {
                         const isActive = current === id;
                         return (
                           <motion.li key={id} variants={itemV}>
@@ -356,7 +383,7 @@ export default function Navbar() {
                               aria-current={isActive ? "location" : undefined}
                               onClick={(e) => handleNav(e, id)}
                             >
-                              {label}
+                              {labels[id]}
                               {isActive && (
                                 <span className={s.mMark} aria-hidden="true" />
                               )}
@@ -368,7 +395,10 @@ export default function Navbar() {
                   </nav>
 
                   <motion.div className={s.mFooter} variants={itemV}>
-                    <TalkLink onClick={() => setOpen(false)} />
+                    <TalkLink
+                      label={t("letsTalk")}
+                      onClick={() => setOpen(false)}
+                    />
                   </motion.div>
                 </div>
               </motion.div>

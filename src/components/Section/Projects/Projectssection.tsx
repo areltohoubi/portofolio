@@ -9,6 +9,7 @@ import { Reveal, revealHeader } from "../About/section-motion";
 import ProjectItem from "./Projectitem";
 import s from "./Projects.module.css";
 import { projects } from "@/data/projects";
+import { useScopedI18n } from "../../../../locales/client";
 
 gsap.registerPlugin(useGSAP);
 
@@ -21,6 +22,7 @@ const PINNED_QUERY =
   "(min-width: 1024px) and (min-height: 700px) and (prefers-reduced-motion: no-preference)";
 
 export default function ProjectsSection() {
+  const t = useScopedI18n("Projects");
   const n = projects.length;
 
   const rootRef = useRef<HTMLElement>(null);
@@ -215,11 +217,11 @@ export default function ProjectsSection() {
           <div className={s.head} data-s="head">
             <div className={s.kicker}>
               <span className={s.kickerText}>
-                <span className={s.kickerNum}>02</span> / SELECTED WORK
+                <span className={s.kickerNum}>02</span> / {t("kicker")}
               </span>
               <span className={s.rule} data-s="rule" />
               <span className={s.count}>
-                {pad(n)} {n === 1 ? "project" : "projects"}
+                {pad(n)} {n === 1 ? t("countOne") : t("countOther")}
               </span>
             </div>
 
@@ -230,22 +232,19 @@ export default function ProjectsSection() {
                     className={`${s.lineInner} ${s.titleLight}`}
                     data-s="line"
                   >
-                    Selected projects.
+                    {t("title.line1")}
                   </span>
                 </span>{" "}
                 <span className={s.line}>
                   <span className={s.lineInner} data-s="line">
-                    Built with intent.
+                    {t("title.line2")}
                   </span>
                 </span>
               </h2>
 
               <div className={s.introWrap}>
                 <Reveal delay={0.15}>
-                  <p className={s.intro}>
-                    A collection of digital products, experiments and
-                    applications built from concept to implementation.
-                  </p>
+                  <p className={s.intro}>{t("intro")}</p>
                 </Reveal>
                 {n > 1 && (
                   <p
@@ -253,7 +252,7 @@ export default function ProjectsSection() {
                     data-started={started}
                     aria-hidden="true"
                   >
-                    SCROLL TO EXPLORE →
+                    {t("hint")}
                   </p>
                 )}
               </div>
@@ -262,7 +261,7 @@ export default function ProjectsSection() {
 
           {/* ---------------------------------------------- Projets */}
           {n === 0 ? (
-            <p className={s.empty}>No projects to show yet.</p>
+            <p className={s.empty}>{t("empty")}</p>
           ) : (
             <div className={s.stage}>
               <div
@@ -296,7 +295,7 @@ export default function ProjectsSection() {
                   <button
                     type="button"
                     className={s.btn}
-                    aria-label="Previous project"
+                    aria-label={t("prev")}
                     aria-disabled={atStart}
                     onClick={() => !atStart && go(-1)}
                   >
@@ -305,7 +304,7 @@ export default function ProjectsSection() {
                   <button
                     type="button"
                     className={s.btn}
-                    aria-label="Next project"
+                    aria-label={t("next")}
                     aria-disabled={atEnd}
                     onClick={() => !atEnd && go(1)}
                   >

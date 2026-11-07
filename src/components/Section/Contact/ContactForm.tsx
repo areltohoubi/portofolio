@@ -17,9 +17,28 @@ import {
   type ContactValues,
 } from "./contact-schema";
 import s from "./Contact.module.css";
+import { useScopedI18n } from "../../../../locales/client";
 
 const EMPTY: ContactValues = { name: "", email: "", subject: "", message: "" };
 const TIMEOUT_MS = 15_000;
+
+/* Codes d'erreur connus (voir ContactForm.errors dans locales/*.ts) */
+const ERROR_CODES = [
+  "nameRequired",
+  "nameTooLong",
+  "emailRequired",
+  "emailInvalid",
+  "subjectTooLong",
+  "messageRequired",
+  "messageTooShort",
+  "messageTooLong",
+  "rateLimited",
+  "spam",
+  "server",
+] as const;
+type ErrorCode = (typeof ERROR_CODES)[number];
+const isErrorCode = (v: string): v is ErrorCode =>
+  (ERROR_CODES as readonly string[]).includes(v);
 
 type Status =
   | { kind: "idle" }
@@ -52,6 +71,7 @@ function Field({
   error,
   onChange,
 }: FieldProps) {
+  const t = useScopedI18n("ContactForm");
   const id = `contact-${name}`;
   const errorId = `${id}-error`;
   const shared = {
@@ -76,7 +96,7 @@ function Field({
     >
       <label htmlFor={id} className={s.label}>
         {label}
-        {optional && <span className={s.optional}> (optional)</span>}
+        {optional && <span className={s.optional}> {t("optional")}</span>}
       </label>
       <div className={s.control}>
         {multiline ? (
@@ -105,6 +125,7 @@ function Field({
 }
 
 export default function ContactForm({ email }: { email?: string }) {
+  const t = useScopedI18n("ContactForm");
   const [values, setValues] = useState<ContactValues>(EMPTY);
   const [errors, setErrors] = useState<ContactErrors>({});
   const [status, setStatus] = useState<Status>({ kind: "idle" });
@@ -119,8 +140,14 @@ export default function ContactForm({ email }: { email?: string }) {
     startedAt.current = Date.now();
   }, []);
 
-  const fallback = email ? ` You can also email me at ${email}.` : "";
+  const fallback = email ? t("fallback", { email }) : "";
   const sending = status.kind === "sending";
+
+  /* Code connu → texte traduit ; chaîne inconnue → affichée telle quelle */
+  const tError = (value?: string) => {
+    if (!value) return undefined;
+    return isErrorCode(value) ? t(`errors.${value}`) : value;
+  };
 
   const onChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const name = e.target.name as ContactField;
@@ -151,10 +178,7 @@ export default function ContactForm({ email }: { email?: string }) {
     const { values: clean, errors: found } = validateContact(values);
     if (Object.keys(found).length > 0) {
       setErrors(found);
-      setStatus({
-        kind: "error",
-        message: "Please check the highlighted fields.",
-      });
+      setStatus({ kind: "error", message: t("status.checkFields") });
       focusFirstInvalid();
       return;
     }
@@ -191,8 +215,7 @@ export default function ContactForm({ email }: { email?: string }) {
           setErrors(data.fieldErrors);
           focusFirstInvalid();
         }
-        const base =
-          data?.error ?? "Something went wrong while sending your message.";
+        const base = tError(data?.error) ?? t("status.generic");
         // Le repli par email n'est pertinent que pour les erreurs côté service
         const serviceIssue = res.status >= 500 || res.status === 429;
         setStatus({
@@ -205,9 +228,7 @@ export default function ContactForm({ email }: { email?: string }) {
       setStatus({
         kind: "error",
         message:
-          (timedOut
-            ? "The request took too long, so I can’t confirm the message was sent."
-            : "Network error: your message was not sent.") + fallback,
+          (timedOut ? t("status.timeout") : t("status.network")) + fallback,
       });
     } finally {
       window.clearTimeout(timeout);
@@ -217,12 +238,12 @@ export default function ContactForm({ email }: { email?: string }) {
 
   return (
     <div className={s.formWrap}>
-      <h3 className={s.formTitle}>Or send a message</h3>
+      <h3 className={s.formTitle}>{t("title")}</h3>
 
       {/* Annonce vocale des changements d'état importants */}
       <p className={s.srOnly} aria-live="polite" aria-atomic="true">
-        {status.kind === "sending" && "Sending your message."}
-        {status.kind === "success" && "Your message has been sent."}
+        {status.kind === "sending" && t("srSending")}
+        {status.kind === "success" && t("srSent")}
       </p>
 
       <AnimatePresence mode="wait" initial={false}>
@@ -236,15 +257,16 @@ export default function ContactForm({ email }: { email?: string }) {
             transition={{ duration: 0.35, ease: EASE }}
           >
             <p className={s.successTitle}>
-              Message sent<span className={s.accent}>.</span>
+              {t("success.title")}
+              <span className={s.accent}>.</span>
             </p>
-            <p className={s.successText}>Thank you for getting in touch.</p>
+            <p className={s.successText}>{t("success.text")}</p>
             <button
               type="button"
               className={s.textButton}
               onClick={() => setStatus({ kind: "idle" })}
             >
-              Send another message
+              {t("success.again")}
             </button>
           </motion.div>
         ) : (
@@ -266,45 +288,45 @@ export default function ContactForm({ email }: { email?: string }) {
             >
               <Field
                 name="name"
-                label="Name"
+                label={t("fields.name")}
                 autoComplete="name"
                 maxLength={LIMITS.name}
                 value={values.name}
-                error={errors.name}
+                error={tError(errors.name)}
                 onChange={onChange}
               />
               <Field
                 name="email"
-                label="Email"
+                label={t("fields.email")}
                 type="email"
                 autoComplete="email"
                 maxLength={LIMITS.email}
                 value={values.email}
-                error={errors.email}
+                error={tError(errors.email)}
                 onChange={onChange}
               />
               <Field
                 name="subject"
-                label="Subject"
+                label={t("fields.subject")}
                 optional
                 maxLength={LIMITS.subject}
                 value={values.subject}
-                error={errors.subject}
+                error={tError(errors.subject)}
                 onChange={onChange}
               />
               <Field
                 name="message"
-                label="Message"
+                label={t("fields.message")}
                 multiline
                 maxLength={LIMITS.messageMax}
                 value={values.message}
-                error={errors.message}
+                error={tError(errors.message)}
                 onChange={onChange}
               />
 
               {/* Champ piège anti-spam : invisible pour les humains */}
               <div className={s.hp} aria-hidden="true">
-                <label htmlFor="contact-hp">Leave this field empty</label>
+                <label htmlFor="contact-hp">{t("honeypot")}</label>
                 <input
                   ref={honeypotRef}
                   id="contact-hp"
@@ -327,7 +349,7 @@ export default function ContactForm({ email }: { email?: string }) {
                   aria-busy={sending}
                   onClick={(e) => sending && e.preventDefault()}
                 >
-                  {sending ? "Sending…" : "Send message"}
+                  {sending ? t("sending") : t("submit")}
                 </button>
 
                 <AnimatePresence initial={false}>

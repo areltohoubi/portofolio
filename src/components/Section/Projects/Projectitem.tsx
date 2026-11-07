@@ -7,6 +7,7 @@ import { motion, type Variants } from "motion/react";
 import type { Project } from "@/data/projects";
 import s from "./Projects.module.css";
 import { EASE, Reveal } from "../About/section-motion";
+import { useScopedI18n } from "../../../../locales/client"
 
 /* Motion : zoom de l'image + micro-interactions des liens.
    GSAP n'anime jamais ces éléments (il ne touche que la piste et la ligne). */
@@ -14,7 +15,8 @@ const zoom: Variants = { idle: { scale: 1 }, zoom: { scale: 1.04 } };
 const underline: Variants = { rest: { scaleX: 0 }, hover: { scaleX: 1 } };
 const nudgeDiag: Variants = { rest: { x: 0, y: 0 }, hover: { x: 2, y: -2 } };
 const nudgeRight: Variants = { rest: { x: 0 }, hover: { x: 4 } };
-const t = { duration: 0.35, ease: EASE };
+// Renommé (ex-« t ») pour ne pas masquer la fonction de traduction
+const tr = { duration: 0.35, ease: EASE };
 
 const MotionLink = motion.create(Link);
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -35,6 +37,8 @@ function ArrowLink({
   external = false,
   className = "",
 }: ArrowLinkProps) {
+  const t = useScopedI18n("ProjectItem");
+
   const inner = (
     <>
       <span className={s.linkLabel}>
@@ -43,7 +47,7 @@ function ArrowLink({
           className={s.linkLine}
           style={{ originX: 0 }}
           variants={underline}
-          transition={t}
+          transition={tr}
           aria-hidden="true"
         />
       </span>
@@ -55,7 +59,7 @@ function ArrowLink({
         fill="none"
         aria-hidden="true"
         variants={external ? nudgeDiag : nudgeRight}
-        transition={t}
+        transition={tr}
       >
         <path
           d={external ? "M3 11L11 3M4.5 3H11v6.5" : "M2 7h10M8 3l4 4-4 4"}
@@ -67,7 +71,7 @@ function ArrowLink({
       <span className={s.srOnly}>
         {" "}
         {context}
-        {external ? " (opens in a new tab)" : ""}
+        {external ? ` ${t("newTab")}` : ""}
       </span>
     </>
   );
@@ -98,6 +102,7 @@ type Props = {
 };
 
 export default function ProjectItem({ project, index, active }: Props) {
+  const t = useScopedI18n("ProjectItem");
   const [imageFailed, setImageFailed] = useState(false);
   const {
     slug,
@@ -139,7 +144,7 @@ export default function ProjectItem({ project, index, active }: Props) {
               {showImage ? (
                 <Image
                   src={image as string}
-                  alt={imageAlt ?? `Screenshot of ${title}`}
+                  alt={imageAlt ?? t("screenshotOf", { title })}
                   fill
                   sizes="(min-width: 1024px) 736px, 90vw"
                   className={s.img}
@@ -150,13 +155,15 @@ export default function ProjectItem({ project, index, active }: Props) {
                 <div
                   className={s.placeholder}
                   role="img"
-                  aria-label={`No screenshot available for ${title}`}
+                  aria-label={t("noScreenshot", { title })}
                 >
-                  <span className={s.placeholderText}>Screenshot to add</span>
+                  <span className={s.placeholderText}>
+                    {t("screenshotToAdd")}
+                  </span>
                 </div>
               )}
             </motion.div>
-            {demo && <span className={s.demoTag}>Demo content</span>}
+            {demo && <span className={s.demoTag}>{t("demoTag")}</span>}
           </div>
 
           <div className={s.info}>
@@ -173,12 +180,14 @@ export default function ProjectItem({ project, index, active }: Props) {
             <p className={s.desc}>{description}</p>
 
             {visibleTech.length > 0 && (
-              <ul className={s.itemTech} aria-label="Technologies">
+              <ul className={s.itemTech} aria-label={t("technologies")}>
                 {visibleTech.map((tech) => (
                   <li key={tech}>{tech}</li>
                 ))}
                 {extraTech > 0 && (
-                  <li aria-label={`and ${extraTech} more`}>+{extraTech}</li>
+                  <li aria-label={t("moreTech", { count: extraTech })}>
+                    +{extraTech}
+                  </li>
                 )}
               </ul>
             )}
@@ -187,8 +196,8 @@ export default function ProjectItem({ project, index, active }: Props) {
               {project.liveUrl && (
                 <ArrowLink
                   href={project.liveUrl}
-                  label="Live preview"
-                  context={`of ${title}`}
+                  label={t("livePreview")}
+                  context={t("ofProject", { title })}
                   external
                   className={s.ext}
                 />
@@ -196,16 +205,16 @@ export default function ProjectItem({ project, index, active }: Props) {
               {project.githubUrl && (
                 <ArrowLink
                   href={project.githubUrl}
-                  label="Source code"
-                  context={`of ${title}`}
+                  label={t("sourceCode")}
+                  context={t("ofProject", { title })}
                   external
                   className={s.ext}
                 />
               )}
               <ArrowLink
                 href={`/projects/${slug}`}
-                label="Read case study"
-                context={`: ${title}`}
+                label={t("caseStudy")}
+                context={t("caseStudyContext", { title })}
                 className={s.caseLink}
               />
             </div>

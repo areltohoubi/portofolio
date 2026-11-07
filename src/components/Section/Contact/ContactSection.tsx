@@ -20,10 +20,12 @@ import {
 import { contactConfig } from "./contact.config";
 import ContactForm from "./ContactForm";
 import s from "./Contact.module.css";
+import { useScopedI18n } from "../../../../locales/client";
 
 gsap.registerPlugin(useGSAP);
 
-const t = { duration: 0.3, ease: EASE };
+// Renommé (ex-« t ») pour ne pas masquer la fonction de traduction
+const tr = { duration: 0.3, ease: EASE };
 const underline: Variants = { rest: { scaleX: 0 }, hover: { scaleX: 1 } };
 const nudge: Variants = { rest: { x: 0, y: 0 }, hover: { x: 3, y: -3 } };
 
@@ -46,6 +48,7 @@ function renderLine(line: string, accent: string) {
 type CopyState = "idle" | "copied" | "error";
 
 function EmailBlock({ email }: { email: string }) {
+  const t = useScopedI18n("Contact");
   const [state, setState] = useState<CopyState>("idle");
   const timer = useRef<number | undefined>(undefined);
 
@@ -79,10 +82,10 @@ function EmailBlock({ email }: { email: string }) {
 
   const label =
     state === "copied"
-      ? "Copied!"
+      ? t("email.copied")
       : state === "error"
-        ? "Copy failed"
-        : "Copy address";
+        ? t("email.failed")
+        : t("email.copy");
 
   return (
     <div className={s.emailBlock}>
@@ -94,7 +97,7 @@ function EmailBlock({ email }: { email: string }) {
           strokeWidth={1.25}
           aria-hidden="true"
         />
-        <span className={s.srOnly}>Send me an email</span>
+        <span className={s.srOnly}>{t("email.send")}</span>
       </a>
 
       <div className={s.copyRow}>
@@ -102,7 +105,7 @@ function EmailBlock({ email }: { email: string }) {
           type="button"
           className={s.copyBtn}
           onClick={copy}
-          aria-label="Copy email address"
+          aria-label={t("email.copyAria")}
         >
           <AnimatePresence mode="wait" initial={false}>
             <motion.span
@@ -119,14 +122,11 @@ function EmailBlock({ email }: { email: string }) {
           </AnimatePresence>
         </button>
         {state === "error" && (
-          <span className={s.copyHint}>
-            Select the address above and copy it manually.
-          </span>
+          <span className={s.copyHint}>{t("email.hint")}</span>
         )}
         <span className={s.srOnly} role="status" aria-live="polite">
-          {state === "copied" && "Email address copied to clipboard."}
-          {state === "error" &&
-            "Could not copy the address. Please select it manually."}
+          {state === "copied" && t("email.srCopied")}
+          {state === "error" && t("email.srFailed")}
         </span>
       </div>
     </div>
@@ -137,18 +137,13 @@ function EmailBlock({ email }: { email: string }) {
    Section
    --------------------------------------------------------------------------- */
 export default function ContactSection() {
-  const {
-    sectionNumber,
-    eyebrow,
-    titleLines,
-    accent,
-    intro,
-    email,
-    socials,
-    availability,
-    closing,
-    signature,
-  } = contactConfig;
+  const t = useScopedI18n("Contact");
+  const { sectionNumber, email, socials } = contactConfig;
+
+  const titleLines = t("titleLines").split("|");
+  const accent = t("accent");
+  const availability = t("availability");
+  const signature = t("signature");
 
   const rootRef = useRef<HTMLElement>(null);
   const hasEmail = email.trim() !== "";
@@ -218,13 +213,14 @@ export default function ContactSection() {
           <div data-s="head">
             <div className={s.kicker}>
               <span className={s.kickerText}>
-                <span className={s.kickerNum}>{sectionNumber}</span> / {eyebrow}
+                <span className={s.kickerNum}>{sectionNumber}</span> /{" "}
+                {t("eyebrow")}
               </span>
               <span className={s.rule} data-s="rule" />
             </div>
 
             <h2 id="contact-title" className={s.title}>
-              {titleLines.map((line, i) => (
+              {titleLines.map((line: string, i: number) => (
                 <Fragment key={line}>
                   <span className={`${s.line} ${i % 2 === 1 ? s.indent : ""}`}>
                     <span
@@ -271,7 +267,7 @@ export default function ContactSection() {
           <div className={s.grid}>
             <div className={s.left}>
               <Reveal>
-                <p className={s.intro}>{intro}</p>
+                <p className={s.intro}>{t("intro")}</p>
               </Reveal>
 
               {hasEmail && (
@@ -300,14 +296,14 @@ export default function ContactSection() {
                             className={s.socialLine}
                             style={{ originX: 0 }}
                             variants={underline}
-                            transition={t}
+                            transition={tr}
                             aria-hidden="true"
                           />
                         </span>
                         <motion.span
                           className={s.socialArrow}
                           variants={nudge}
-                          transition={t}
+                          transition={tr}
                         >
                           <ArrowUpRight
                             size={20}
@@ -315,7 +311,7 @@ export default function ContactSection() {
                             aria-hidden="true"
                           />
                         </motion.span>
-                        <span className={s.srOnly}> (opens in a new tab)</span>
+                        <span className={s.srOnly}> {t("newTab")}</span>
                       </motion.a>
                     </motion.li>
                   ))}
@@ -339,10 +335,10 @@ export default function ContactSection() {
 
           {/* ------------------------------------- Signature de fin */}
           <Reveal className={s.end}>
-            <p className={s.closing}>{closing}</p>
+            <p className={s.closing}>{t("closing")}</p>
             <p className={s.signature}>{renderSignature(signature)}</p>
             <a href="#home" className={s.toTop} onClick={toTop}>
-              <span>Back to top</span>
+              <span>{t("backToTop")}</span>
               <ArrowUp size={16} strokeWidth={1.5} aria-hidden="true" />
             </a>
           </Reveal>
