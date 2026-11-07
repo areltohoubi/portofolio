@@ -1,6 +1,6 @@
 export const contactConfig = {
   sectionNumber: "04",
-  email: "ton@email.com",
+  email: "areltohoubi@gmail.com",
   socials: [
     { label: "GitHub", href: "https://github.com/areltohoubi" }, // ex. "https://github.com/ton-pseudo"
     {
