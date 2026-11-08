@@ -35,7 +35,6 @@ export default function Footer() {
     description,
     email,
     socials,
-    availability,
     tagline,
     nav,
   } = footerConfig;
@@ -175,12 +174,7 @@ export default function Footer() {
               — {name}
             </p>
             <p className={s.tagline}>{tagline}</p>
-            {availability.trim() !== "" && (
-              <p className={s.status}>
-                <span className={s.statusDot} aria-hidden="true" />
-                {availability}
-              </p>
-            )}
+
           </motion.div>
         </motion.div>
       </footer>

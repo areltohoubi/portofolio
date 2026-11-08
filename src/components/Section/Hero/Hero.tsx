@@ -5,15 +5,10 @@ import Link from "next/link";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { MotionConfig, motion, type Variants } from "motion/react";
+import { useScopedI18n } from "../../../../locales/client";
 import s from "./Hero.module.css";
 
 gsap.registerPlugin(useGSAP);
-
-/* -------------------------------------------------------------------------
-   Contenu : à ajuster
-   ------------------------------------------------------------------------- */
-const LOCATION = "Working remotely";
-const EXPERTISE = "Full Stack, Next.js and Laravel";
 
 type HeroProps = {
   workHref?: string;
@@ -134,6 +129,7 @@ export default function Hero({
   contactHref = "#contact",
 }: HeroProps) {
   const rootRef = useRef<HTMLElement>(null);
+  const t = useScopedI18n("Hero");
 
   useGSAP(
     () => {
@@ -153,12 +149,10 @@ export default function Hero({
             motion: boolean;
             wide: boolean;
           };
-          // Réduction des animations : le contenu reste affiché tel quel (CSS)
           if (!allowed) return;
 
           const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
-          // 1. Filets + informations contextuelles
           tl.fromTo(
             q('[data-hero="rule"]'),
             { scaleX: 0 },
@@ -171,15 +165,19 @@ export default function Hero({
             0.15,
           );
 
-          // 2. Slogan : révélation ligne par ligne (le texte reste du vrai texte)
           tl.fromTo(
             q('[data-hero="line"]'),
             { yPercent: 105, y: 0 },
-            { yPercent: 0, y: 0, duration: 1, stagger: 0.1, ease: "power4.out" },
+            {
+              yPercent: 0,
+              y: 0,
+              duration: 1,
+              stagger: 0.1,
+              ease: "power4.out",
+            },
             0.2,
           );
 
-          // 3. Description puis actions
           tl.fromTo(
             q('[data-hero="desc"]'),
             { opacity: 0, y: 14 },
@@ -192,7 +190,6 @@ export default function Hero({
             0.95,
           );
 
-          // 4. Élément graphique (desktop/tablette uniquement)
           if (wide) {
             const stems = q('[data-hero="stem"]');
             const nodes = q('[data-hero="node"]');
@@ -225,15 +222,20 @@ export default function Hero({
 
   return (
     <MotionConfig reducedMotion="user">
-      <section id="home" ref={rootRef} className={s.hero} aria-labelledby="hero-title">
+      <section
+        id="home"
+        ref={rootRef}
+        className={s.hero}
+        aria-labelledby="hero-title"
+      >
         {/* Informations contextuelles */}
         <div>
           <ul className={s.meta}>
             <li className={`${s.metaItem} ${s.reveal}`} data-hero="meta">
-              {LOCATION}
+              {t("location")}
             </li>
             <li className={`${s.metaItem} ${s.reveal}`} data-hero="meta">
-              {EXPERTISE}
+              {t("expertise")}
             </li>
           </ul>
           <div className={s.rule} data-hero="rule" />
@@ -252,17 +254,17 @@ export default function Hero({
           <h1 id="hero-title" className={s.title}>
             <span className={s.line}>
               <span className={`${s.lineInner} ${s.crafting}`} data-hero="line">
-                Crafting
+                {t("titleLine1")}
               </span>
             </span>{" "}
             <span className={`${s.line} ${s.lineIndent}`}>
               <span className={`${s.lineInner} ${s.modern}`} data-hero="line">
-                modern
+                {t("titleLine2")}
               </span>
             </span>{" "}
             <span className={s.line}>
               <span className={`${s.lineInner} ${s.web}`} data-hero="line">
-                web experiences.
+                {t("titleLine3")}
               </span>
             </span>
           </h1>
@@ -273,8 +275,8 @@ export default function Hero({
           <div className={s.rule} data-hero="rule" />
           <div className={s.bottom}>
             <p className={`${s.desc} ${s.reveal}`} data-hero="desc">
-              Full Stack Developer building thoughtful digital products with{" "}
-              <span className={s.stack}>Next.js, React and Laravel.</span>
+              {t("descBefore")}{" "}
+              <span className={s.stack}>{t("descStack")}</span>
             </p>
 
             <div className={s.actions}>
@@ -288,7 +290,7 @@ export default function Hero({
                   whileFocus="hover"
                   whileTap={{ scale: 0.97 }}
                 >
-                  <RollLabel>Explore my work</RollLabel>
+                  <RollLabel>{t("exploreWork")}</RollLabel>
                 </MotionLink>
               </div>
 
@@ -302,7 +304,7 @@ export default function Hero({
                   whileFocus="hover"
                 >
                   <span className={s.secondaryLabel}>
-                    Get in touch
+                    {t("getInTouch")}
                     <motion.span
                       className={s.underline}
                       style={{ originX: 0 }}

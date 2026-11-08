@@ -12,13 +12,9 @@ import {
   revealHeader,
   trail,
 } from "./section-motion";
-import {
-  contactHref,
-  coreStack,
-  stackCategories,
-  stackIntro,
-} from "./portfolio-data";
+import { contactHref, coreStack, stackCategoryIds } from "./portfolio-data";
 import s from "./Sections.module.css";
+import { useScopedI18n } from "../../../../locales/client";
 
 gsap.registerPlugin(useGSAP);
 
@@ -29,12 +25,8 @@ const ctaArrow: Variants = { rest: { x: 0, y: 0 }, hover: { x: 6, y: -6 } };
 const ease = { duration: 0.35, ease: EASE };
 
 export default function StackSection() {
+  const t = useScopedI18n("Stack");
   const rootRef = useRef<HTMLElement>(null);
-
-  const core = coreStack.filter((t) => !t.hidden);
-  const categories = stackCategories
-    .map((c) => ({ ...c, items: c.items.filter((t) => !t.hidden) }))
-    .filter((c) => c.items.length > 0);
 
   useGSAP(
     () => {
@@ -66,7 +58,7 @@ export default function StackSection() {
           <div data-s="head">
             <div className={s.kicker}>
               <span className={s.kickerText}>
-                <span className={s.kickerNum}>03</span> / STACK
+                <span className={s.kickerNum}>03</span> / {t("kicker")}
               </span>
               <span className={s.rule} data-s="rule" />
             </div>
@@ -75,7 +67,7 @@ export default function StackSection() {
               <h2 id="stack-title" className={s.title}>
                 <span className={s.line}>
                   <span className={s.lineInner} data-s="line">
-                    Tools of
+                    {t("title.line1")}
                   </span>
                 </span>{" "}
                 <span className={`${s.line} ${s.indent}`}>
@@ -83,13 +75,13 @@ export default function StackSection() {
                     className={`${s.lineInner} ${s.titleLight}`}
                     data-s="line"
                   >
-                    the trade.
+                    {t("title.line2")}
                   </span>
                 </span>
               </h2>
 
               <Reveal delay={0.15} className={s.introWrap}>
-                <p className={s.intro}>{stackIntro}</p>
+                <p className={s.intro}>{t("intro")}</p>
               </Reveal>
             </div>
           </div>
@@ -98,23 +90,23 @@ export default function StackSection() {
           <div className={s.block}>
             <Reveal className={s.blockHead}>
               <h3 className={s.blockTitle}>
-                <span className={s.blockIndex}>01</span> Core stack
+                <span className={s.blockIndex}>01</span> {t("coreBlock.title")}
               </h3>
             </Reveal>
 
             <RevealList className={s.coreList}>
-              {core.map((t) => (
+              {coreStack.map(({ id, name }) => (
                 <motion.li
-                  key={t.name}
+                  key={id}
                   className={s.coreRow}
                   variants={fadeItem}
                   initial={false}
                 >
                   <span className={s.coreDot} aria-hidden="true" />
                   <span className={s.coreName}>
-                    <span className={s.shift}>{t.name}</span>
+                    <span className={s.shift}>{name}</span>
                   </span>
-                  {t.note && <span className={s.coreNote}>{t.note}</span>}
+                  <span className={s.coreNote}>{t(`core.${id}`)}</span>
                 </motion.li>
               ))}
             </RevealList>
@@ -127,35 +119,42 @@ export default function StackSection() {
               <span className={s.trailFill} data-s="fill" aria-hidden="true" />
 
               <ul className={s.catList}>
-                {categories.map((c, i) => (
-                  <li key={c.id} className={s.catRow}>
-                    <span
-                      className={s.mark}
-                      data-s="mark"
-                      data-passed="false"
-                      aria-hidden="true"
-                    />
+                {stackCategoryIds.map((id, i) => {
+                  const items = t(`categories.${id}.items`).split("|");
+                  return (
+                    <li key={id} className={s.catRow}>
+                      <span
+                        className={s.mark}
+                        data-s="mark"
+                        data-passed="false"
+                        aria-hidden="true"
+                      />
 
-                    <Reveal className={s.catHead}>
-                      <span className={s.catNum}>{pad(i + 2)}</span>
-                      <h3 className={s.catTitle}>{c.title}</h3>
-                      <p className={s.catBlurb}>{c.blurb}</p>
-                    </Reveal>
+                      <Reveal className={s.catHead}>
+                        <span className={s.catNum}>{pad(i + 2)}</span>
+                        <h3 className={s.catTitle}>
+                          {t(`categories.${id}.title`)}
+                        </h3>
+                        <p className={s.catBlurb}>
+                          {t(`categories.${id}.blurb`)}
+                        </p>
+                      </Reveal>
 
-                    <RevealList className={s.techList}>
-                      {c.items.map((t) => (
-                        <motion.li
-                          key={t.name}
-                          className={s.techItem}
-                          variants={fadeItem}
-                          initial={false}
-                        >
-                          <span className={s.shift}>{t.name}</span>
-                        </motion.li>
-                      ))}
-                    </RevealList>
-                  </li>
-                ))}
+                      <RevealList className={s.techList}>
+                        {items.map((item) => (
+                          <motion.li
+                            key={item}
+                            className={s.techItem}
+                            variants={fadeItem}
+                            initial={false}
+                          >
+                            <span className={s.shift}>{item}</span>
+                          </motion.li>
+                        ))}
+                      </RevealList>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </div>
@@ -171,7 +170,7 @@ export default function StackSection() {
               whileFocus="hover"
             >
               <span className={s.ctaLabel}>
-                Let’s build something
+                {t("cta.label")}
                 <motion.span
                   className={s.ctaLine}
                   style={{ originX: 0 }}
@@ -195,7 +194,7 @@ export default function StackSection() {
                   strokeLinecap="square"
                 />
               </motion.svg>
-              <span className={s.srOnly}>Get in touch</span>
+              <span className={s.srOnly}>{t("cta.sr")}</span>
             </motion.a>
           </Reveal>
         </div>

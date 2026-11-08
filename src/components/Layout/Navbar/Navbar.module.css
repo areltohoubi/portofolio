@@ -224,6 +224,16 @@
   color: var(--primary);
 }
 
+.languageSwitcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-block: 0.35rem;
+  color: var(--foreground);
+  font-size: 0.9375rem;
+  text-decoration: none;
+}
+
 /* --------------------------------------------------------------------------
    Mobile : bouton + panneau pleine largeur sous la barre
    -------------------------------------------------------------------------- */

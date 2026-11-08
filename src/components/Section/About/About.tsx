@@ -15,24 +15,32 @@ import {
   useReveal,
 } from "./section-motion";
 import {
-  bio,
-  expertise,
-  intro,
-  methodology,
-  profileInfo,
+  bioKeys,
+  expertiseIds,
+  methodologyIds,
+  profileKeys,
 } from "./portfolio-data";
 import s from "./Sections.module.css";
+import { useScopedI18n } from "../../../../locales/client";
 
 gsap.registerPlugin(useGSAP);
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
 export default function AboutSection() {
+  const t = useScopedI18n("About");
   const rootRef = useRef<HTMLElement>(null);
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   const reduce = useReducedMotion();
 
-  const info = profileInfo.filter((f) => f.value.trim() !== "");
+  const info = profileKeys
+    .map((key) => ({
+      key,
+      label: t(`profile.${key}.label`),
+      value: t(`profile.${key}.value`),
+    }))
+    .filter((f) => f.value.trim() !== "");
+
   const dl = useReveal<HTMLDListElement>();
   const steps = useReveal<HTMLOListElement>();
 
@@ -73,7 +81,6 @@ export default function AboutSection() {
             );
           }
 
-          // Parallaxe très légère sur l'initiale décorative (desktop uniquement)
           const glyph = root.querySelector<HTMLElement>('[data-s="glyph"]');
           const host = root.querySelector<HTMLElement>(
             '[data-s="presentation"]',
@@ -115,7 +122,7 @@ export default function AboutSection() {
           <div data-s="head">
             <div className={s.kicker}>
               <span className={s.kickerText}>
-                <span className={s.kickerNum}>01</span> / ABOUT
+                <span className={s.kickerNum}>01</span> / {t("kicker")}
               </span>
               <span className={s.rule} data-s="rule" />
             </div>
@@ -127,23 +134,24 @@ export default function AboutSection() {
                     className={`${s.lineInner} ${s.titleLight}`}
                     data-s="line"
                   >
-                    More than code.
+                    {t("title.line1")}
                   </span>
                 </span>{" "}
                 <span className={s.line}>
                   <span className={s.lineInner} data-s="line">
-                    A <span className={s.accent}>mindset</span>
+                    {t("title.line2Before")}{" "}
+                    <span className={s.accent}>{t("title.line2Accent")}</span>
                   </span>
                 </span>{" "}
                 <span className={`${s.line} ${s.indent}`}>
                   <span className={s.lineInner} data-s="line">
-                    for building.
+                    {t("title.line3")}
                   </span>
                 </span>
               </h2>
 
               <Reveal delay={0.15} className={s.introWrap}>
-                <p className={s.intro}>{intro}</p>
+                <p className={s.intro}>{t("intro")}</p>
               </Reveal>
             </div>
           </div>
@@ -151,19 +159,19 @@ export default function AboutSection() {
           {/* ------------------------------------------ Présentation */}
           <div className={s.presentation} data-s="presentation">
             <span className={s.glyph} data-s="glyph" aria-hidden="true">
-              A
+              {t("glyph")}
             </span>
 
             <div className={s.bioCol}>
-              {bio.map((text, i) => (
-                <Reveal key={i} delay={i * 0.08}>
-                  <p className={i === 0 ? s.lead : s.body}>{text}</p>
+              {bioKeys.map((key, i) => (
+                <Reveal key={key} delay={i * 0.08}>
+                  <p className={i === 0 ? s.lead : s.body}>{t(`bio.${key}`)}</p>
                 </Reveal>
               ))}
             </div>
 
             {info.length > 0 && (
-              <aside className={s.profile} aria-label="Profile details">
+              <aside className={s.profile} aria-label={t("profileAria")}>
                 <motion.dl
                   ref={dl.ref}
                   className={s.dl}
@@ -171,9 +179,9 @@ export default function AboutSection() {
                   initial={false}
                   animate={dl.state}
                 >
-                  {info.map(({ label, value }) => (
+                  {info.map(({ key, label, value }) => (
                     <motion.div
-                      key={label}
+                      key={key}
                       className={s.dlRow}
                       variants={fadeItem}
                       initial={false}
@@ -190,11 +198,8 @@ export default function AboutSection() {
           {/* ---------------------------------------------- Expertise */}
           <div className={s.block}>
             <Reveal className={s.blockHead}>
-              <h3 className={s.blockTitle}>Areas of expertise</h3>
-              <p className={s.blockNote}>
-                What I work on, and the tools I reach for. Open a row to see the
-                technologies.
-              </p>
+              <h3 className={s.blockTitle}>{t("expertiseBlock.title")}</h3>
+              <p className={s.blockNote}>{t("expertiseBlock.note")}</p>
             </Reveal>
 
             <div className={s.trailWrap} data-s="expertise">
@@ -202,12 +207,13 @@ export default function AboutSection() {
               <span className={s.trailFill} data-s="fill" aria-hidden="true" />
 
               <ul className={s.exList}>
-                {expertise.map((d, i) => {
+                {expertiseIds.map((id, i) => {
                   const open = openIndex === i;
-                  const btnId = `ex-btn-${d.id}`;
-                  const panelId = `ex-panel-${d.id}`;
+                  const btnId = `ex-btn-${id}`;
+                  const panelId = `ex-panel-${id}`;
+                  const techs = t(`expertise.${id}.tech`).split("|");
                   return (
-                    <li key={d.id} className={s.exRow} data-open={open}>
+                    <li key={id} className={s.exRow} data-open={open}>
                       <span
                         className={s.mark}
                         data-s="mark"
@@ -226,10 +232,12 @@ export default function AboutSection() {
                           aria-controls={panelId}
                           onClick={() => setOpenIndex(open ? null : i)}
                         >
-                          {d.title}
+                          {t(`expertise.${id}.title`)}
                         </button>
                       </h4>
-                      <p className={s.exDesc}>{d.description}</p>
+                      <p className={s.exDesc}>
+                        {t(`expertise.${id}.description`)}
+                      </p>
                       <span className={s.exIcon} aria-hidden="true">
                         +
                       </span>
@@ -248,9 +256,9 @@ export default function AboutSection() {
                         onAnimationComplete={() => ScrollTrigger.refresh()}
                       >
                         <ul className={s.techs}>
-                          {d.tech.map((t) => (
-                            <li key={t} className={s.tech}>
-                              {t}
+                          {techs.map((tech) => (
+                            <li key={tech} className={s.tech}>
+                              {tech}
                             </li>
                           ))}
                         </ul>
@@ -265,10 +273,8 @@ export default function AboutSection() {
           {/* ------------------------------------------ Méthodologie */}
           <div className={s.block}>
             <Reveal className={s.blockHead}>
-              <h3 className={s.blockTitle}>How I approach a build</h3>
-              <p className={s.blockNote}>
-                A loose sequence I come back to, not a fixed process.
-              </p>
+              <h3 className={s.blockTitle}>{t("methodBlock.title")}</h3>
+              <p className={s.blockNote}>{t("methodBlock.note")}</p>
             </Reveal>
 
             <div className={s.method} data-s="method">
@@ -282,9 +288,9 @@ export default function AboutSection() {
                 initial={false}
                 animate={steps.state}
               >
-                {methodology.map((m, i) => (
+                {methodologyIds.map((id, i) => (
                   <motion.li
-                    key={m.title}
+                    key={id}
                     className={s.step}
                     variants={fadeItem}
                     initial={false}
@@ -298,8 +304,12 @@ export default function AboutSection() {
                     <span className={s.stepNum} aria-hidden="true">
                       {pad(i + 1)}
                     </span>
-                    <h4 className={s.stepTitle}>{m.title}</h4>
-                    <p className={s.stepDesc}>{m.description}</p>
+                    <h4 className={s.stepTitle}>
+                      {t(`methodology.${id}.title`)}
+                    </h4>
+                    <p className={s.stepDesc}>
+                      {t(`methodology.${id}.description`)}
+                    </p>
                   </motion.li>
                 ))}
               </motion.ol>

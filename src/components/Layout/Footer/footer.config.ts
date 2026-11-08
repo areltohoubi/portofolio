@@ -21,7 +21,6 @@ export const footerConfig = {
   /** Email, profils et disponibilité viennent de contact.config.ts (source unique). */
   email: contactConfig.email,
   socials: contactConfig.socials,
-  availability: contactConfig.availability,
 
   tagline: "Designed & developed with care.",
 
