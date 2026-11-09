@@ -7,8 +7,11 @@ import { ReactNode } from "react";
 import { getStaticParams } from "../../../locales/server";
 import { I18nProviderClient } from "../../../locales/client";
 
+// Définissez le domaine de votre site (à adapter avec votre URL réelle)
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://areltohoubi.com";
+
 export function generateStaticParams() {
-  return getStaticParams(); // Retourne [{ locale: 'en' }, { locale: 'fr' }]
+  return getStaticParams(); // [{ locale: 'en' }, { locale: 'fr' }]
 }
 
 export async function generateMetadata({
@@ -19,25 +22,90 @@ export async function generateMetadata({
   const { locale } = await params;
   const isFrench = locale === "fr";
 
-  const titles = {
-    fr: "Arel Tohoubi | Portfolio",
-    en: "Arel Tohoubi | Portfolio",
-  };
+  const title = isFrench
+    ? "Arel Tohoubi — Développeur Fullstack (Next.js & Laravel)"
+    : "Arel Tohoubi — Fullstack Developer (Next.js & Laravel)";
 
-  const descriptions = {
-    fr: "Développeur Frontend spécialisé dans la création d'interfaces épurées et d'expériences numériques mémorables.",
-    en: "Frontend Developer specialized in creating clean interfaces and memorable digital experiences.",
-  };
+  const description = isFrench
+    ? "Développeur Fullstack spécialisé dans la conception d'applications web performantes avec Next.js, Laravel et TypeScript. Interfaces épurées et architectures robustes."
+    : "Fullstack Developer specialized in building high-performance web applications using Next.js, Laravel, and TypeScript. Clean interfaces and robust architectures.";
+
+  const keywords = isFrench
+    ? [
+        "Développeur Fullstack",
+        "Arel Tohoubi",
+        "Next.js",
+        "Laravel",
+        "React",
+        "TypeScript",
+        "PHP",
+        "API REST",
+        "UI/UX",
+        "Portfolio",
+      ]
+    : [
+        "Fullstack Developer",
+        "Arel Tohoubi",
+        "Next.js",
+        "Laravel",
+        "React",
+        "TypeScript",
+        "PHP",
+        "REST API",
+        "UI/UX",
+        "Portfolio",
+      ];
 
   return {
-    title: titles[locale as keyof typeof titles] || titles.en,
-    description:
-      descriptions[locale as keyof typeof descriptions] || descriptions.en,
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: title,
+      template: "%s | Arel Tohoubi",
+    },
+    description,
+    keywords,
+    authors: [{ name: "Arel Tohoubi", url: SITE_URL }],
+    creator: "Arel Tohoubi",
     alternates: {
-      canonical: `/${locale}`,
+      canonical: `${SITE_URL}/${locale}`,
       languages: {
-        fr: "/fr",
-        en: "/en",
+        fr: `${SITE_URL}/fr`,
+        en: `${SITE_URL}/en`,
+        "x-default": `${SITE_URL}/fr`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${SITE_URL}/${locale}`,
+      siteName: "Arel Tohoubi Portfolio",
+      locale: isFrench ? "fr_FR" : "en_US",
+      type: "website",
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      creator: "@areltohoubi",
+      images: ["/og-image.png"],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
       },
     },
   };
